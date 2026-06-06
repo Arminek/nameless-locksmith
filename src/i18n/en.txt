@@ -47,6 +47,11 @@ result.solved_suffix = clicks  ·  ^W walk  ·  ^S save
 solve.nothing_walk   = Nothing to walk — press Enter to solve first
 solve.nothing_save   = Nothing to save — press Enter to solve first
 solve.cracking      = cracking the lock
+solve.tumblers      = Tumblers
+solve.example       = Load example
+solve.format        = Format & examples
+solve.err_complex   = Lock too complex to solve in the browser — try fewer tumblers
+solve.err_count     = Enter one starting position (1–7) for each tumbler
 
 step.lock    = Lock
 step.steps   = Steps

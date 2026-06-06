@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://arminek.github.io/nameless-locksmith/sitemap.xml

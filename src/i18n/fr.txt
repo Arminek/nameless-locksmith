@@ -40,6 +40,11 @@ result.solved_suffix = clics  ·  ^W lire  ·  ^S enregistrer
 solve.nothing_walk   = Rien à lire — appuyez sur Entrée pour résoudre
 solve.nothing_save   = Rien à enregistrer — appuyez sur Entrée pour résoudre
 solve.cracking      = crochetage de la serrure
+solve.tumblers      = Disques
+solve.example       = Charger un exemple
+solve.format        = Format et exemples
+solve.err_complex   = Serrure trop complexe pour le navigateur — essayez moins de disques
+solve.err_count     = Indiquez une position de départ (1–7) par disque
 
 step.lock    = Serrure
 step.steps   = Étapes

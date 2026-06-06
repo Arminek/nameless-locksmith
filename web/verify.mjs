@@ -4,7 +4,7 @@
 //
 //   node web/verify.mjs   (exits non-zero on any failure; run in CI before deploy)
 
-import { GOAL, buildMatrix, solve, applyClick, parseSolutionSteps } from "./solver.js";
+import { goalFor, buildMatrix, solve, applyClick, parseSolutionSteps } from "./solver.js";
 import { HISTORY } from "./data.js";
 
 const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
@@ -32,15 +32,16 @@ for (const lock of HISTORY) {
     failed++;
     continue;
   }
+  const GOAL = goalFor(lock.start.length);
   try {
     // 1. solver output is wall-safe and reaches the goal
     const sol = solve(lock.start, mat);
-    if (!sol) throw new Error("solver found no solution");
+    if (!sol || sol.err) throw new Error("solver found no solution");
     const end = replay(lock.start, mat, sol.steps);
     if (!eq(end, GOAL)) throw new Error(`solver output ends at [${end}]`);
 
     // 2. recorded solution replays to the goal and isn't shorter than optimal
-    const recorded = parseSolutionSteps(lock.solution);
+    const recorded = parseSolutionSteps(lock.solution, lock.rules.length);
     if (recorded) {
       const rend = replay(lock.start, mat, recorded);
       if (!eq(rend, GOAL)) throw new Error(`recorded solution ends at [${rend}]`);

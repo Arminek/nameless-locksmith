@@ -40,6 +40,11 @@ result.solved_suffix = cliques  ·  ^W reproduzir  ·  ^S guardar
 solve.nothing_walk   = Nada para reproduzir — pressione Enter para resolver
 solve.nothing_save   = Nada para guardar — pressione Enter para resolver
 solve.cracking      = a forçar a fechadura
+solve.tumblers      = Tambores
+solve.example       = Carregar exemplo
+solve.format        = Formato e exemplos
+solve.err_complex   = Fechadura demasiado complexa para o navegador — use menos tambores
+solve.err_count     = Indique uma posição inicial (1–7) para cada tambor
 
 step.lock    = Fechadura
 step.steps   = Passos

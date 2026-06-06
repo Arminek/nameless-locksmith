@@ -1,18 +1,21 @@
-// solver.js — JavaScript port of the Rust core (src/lib.rs).
+// solver.js — JavaScript port of the Rust core (src/lib.rs), generalized to an
+// arbitrary number of tumblers N (2..8). Each tumbler slides on a 1..7 track and
+// the goal is every plate at 4. The number of tumblers is inferred from the
+// input (rules.length / start.length), so callers don't pass it explicitly.
 //
-// Conventions (plate frame): track positions 1..7, goal = every plate at 4.
-//   Pressing [D] on a tumbler moves its own plate -1, plus its rule effects.
-//   In a rule, `r` = that plate -1, `l` = that plate +1. [A] is the inverse of [D].
-//
-// Kept deliberately faithful to the Rust BFS (same iteration order: tumblers
-// 0..6, keys D then A) so it returns the same optimal solutions. Verified
-// against the Rust binary by web/verify.mjs.
+// Conventions (plate frame): pressing [D] on a tumbler moves its own plate -1
+// plus its rule effects; in a rule, `r` = that plate -1, `l` = that plate +1.
+// [A] is the inverse of [D]. The BFS keeps the Rust iteration order (tumblers
+// 0..N, keys D then A) so for 6-tumbler locks it returns identical solutions.
 
-export const GOAL = [4, 4, 4, 4, 4, 4];
+// Safety cap on explored states (7^8 ≈ 5.7M would be too heavy for a browser).
+const MAX_STATES = 2_000_000;
 
-// D-press delta for one tumbler (0..5) from its rule text. Returns {d} or {err}.
-export function ruleToDelta(idx, text) {
-  const d = [0, 0, 0, 0, 0, 0];
+export const goalFor = (n) => Array(n).fill(4);
+
+// D-press delta for tumbler `idx` (0-based) of an N-tumbler lock. Returns {d}|{err}.
+export function ruleToDelta(idx, text, n) {
+  const d = Array(n).fill(0);
   d[idx] = -1; // own plate always moves -1 on a [D] press
   const t = (text ?? "").trim();
   if (t === "" || t === "-") return { d };
@@ -22,7 +25,7 @@ export function ruleToDelta(idx, text) {
     const dir = tok[tok.length - 1];
     const num = Number(tok.slice(0, -1).trim());
     if (!Number.isInteger(num)) return { err: `bad token '${tok}' in rule ${idx + 1}` };
-    if (num < 1 || num > 6) return { err: `plate ${num} out of range in rule ${idx + 1}` };
+    if (num < 1 || num > n) return { err: `plate ${num} out of range (1..${n}) in rule ${idx + 1}` };
     if (dir === "r") d[num - 1] -= 1;
     else if (dir === "l") d[num - 1] += 1;
     else return { err: `unknown direction '${dir}' in rule ${idx + 1} (only r/l)` };
@@ -30,11 +33,12 @@ export function ruleToDelta(idx, text) {
   return { d };
 }
 
-// Build the 6x6 delta matrix from six rule strings. Returns {mat} or {err}.
+// Build the NxN delta matrix from N rule strings. Returns {mat} or {err}.
 export function buildMatrix(rules) {
+  const n = rules.length;
   const mat = [];
-  for (let i = 0; i < 6; i++) {
-    const { d, err } = ruleToDelta(i, rules[i]);
+  for (let i = 0; i < n; i++) {
+    const { d, err } = ruleToDelta(i, rules[i], n);
     if (err) return { err };
     mat.push(d);
   }
@@ -44,15 +48,17 @@ export function buildMatrix(rules) {
 // Apply one click in place. `tumbler` is 1-based; [A] is the inverse of [D].
 export function applyClick(state, mat, tumbler, key) {
   const sgn = key === "A" ? -1 : 1;
-  for (let i = 0; i < 6; i++) state[i] += sgn * mat[tumbler - 1][i];
+  for (let i = 0; i < state.length; i++) state[i] += sgn * mat[tumbler - 1][i];
 }
 
 const keyOf = (s) => s.join(",");
 
-// BFS over all 7^6 plate states. Returns {total, steps:[[tumbler1..6,key,count]]}
-// for the shortest wall-safe sequence, or null if the goal is unreachable.
+// BFS over all 7^N plate states. Returns {total, steps:[[tumbler1..N,key,count]]}
+// for the shortest wall-safe sequence, null if unreachable, or {err} if the
+// search exceeds the browser-safe state cap.
 export function solve(start, mat) {
-  const goalKey = keyOf(GOAL);
+  const n = start.length;
+  const goalKey = keyOf(goalFor(n));
   const prev = new Map();
   const queue = [start.slice()];
   prev.set(keyOf(start), { parent: null, t: -1, k: " " });
@@ -64,11 +70,11 @@ export function solve(start, mat) {
       reached = true;
       break;
     }
-    for (let t = 0; t < 6; t++) {
+    for (let t = 0; t < n; t++) {
       for (const [kc, sgn] of [["D", 1], ["A", -1]]) {
         const next = cur.slice();
         let ok = true;
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < n; i++) {
           next[i] += sgn * mat[t][i];
           if (next[i] < 1 || next[i] > 7) {
             ok = false;
@@ -82,11 +88,12 @@ export function solve(start, mat) {
         queue.push(next);
       }
     }
+    if (prev.size > MAX_STATES) return { err: "too-complex" };
   }
   if (!reached) return null;
 
   const path = [];
-  let cur = GOAL.slice();
+  let cur = goalFor(n);
   for (;;) {
     const info = prev.get(keyOf(cur));
     if (info.t === -1) break;
@@ -104,9 +111,9 @@ export function solve(start, mat) {
   return { total: path.length, steps };
 }
 
-// Parse grouped solution lines like "4: 2x D" into [[tumbler1..6,key,count]].
-// Returns null if any non-empty line doesn't match.
-export function parseSolutionSteps(lines) {
+// Parse grouped solution lines like "4: 2x D" into [[tumbler,key,count]].
+// If `n` is given, tumblers must be within 1..n. Returns null on any mismatch.
+export function parseSolutionSteps(lines, n) {
   const out = [];
   for (const raw of lines) {
     const line = raw.trim();
@@ -114,7 +121,7 @@ export function parseSolutionSteps(lines) {
     const c = line.indexOf(":");
     if (c < 0) return null;
     const tumbler = Number(line.slice(0, c).trim());
-    if (!Number.isInteger(tumbler) || tumbler < 1 || tumbler > 6) return null;
+    if (!Number.isInteger(tumbler) || tumbler < 1 || (n && tumbler > n)) return null;
     const rest = line.slice(c + 1).trim();
     const x = rest.indexOf("x");
     if (x < 0) return null;
@@ -127,10 +134,9 @@ export function parseSolutionSteps(lines) {
   return out.length ? out : null;
 }
 
-// Parse 6 integers from a free-form string (commas/spaces/brackets ok).
+// Parse integers from a free-form string (commas/spaces/brackets ok).
 export function parseStart(s) {
-  const nums = (s.match(/-?\d+/g) ?? []).map(Number);
-  return nums.length === 6 ? nums : null;
+  return (s.match(/-?\d+/g) ?? []).map(Number);
 }
 
 export const stepLine = ([t, k, n]) => `${t}: ${n}x ${k}`;

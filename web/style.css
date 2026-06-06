@@ -167,7 +167,8 @@ main {
 /* ---- browse ---- */
 .filter,
 input.field,
-.solve-form input {
+.solve-form input,
+.solve-form select {
   width: 100%;
   background: var(--panel-2);
   color: var(--text);
@@ -175,6 +176,47 @@ input.field,
   border-radius: 8px;
   padding: 9px 11px;
   font: inherit;
+}
+
+/* format help / examples */
+.help {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #00000022;
+}
+.help summary {
+  cursor: pointer;
+  padding: 9px 11px;
+  color: var(--brass);
+  user-select: none;
+}
+.help[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+.help-body {
+  padding: 6px 12px 12px;
+  font-size: 13.5px;
+  color: var(--text);
+}
+.help-body p {
+  margin: 8px 0;
+}
+.help-body code {
+  background: #ffffff14;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+.help-body pre {
+  background: #0e0b07;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow: auto;
+  font-size: 12.5px;
+  color: var(--brass-bright);
+  margin: 8px 0;
 }
 .locklist {
   list-style: none;

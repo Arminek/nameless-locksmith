@@ -40,6 +40,11 @@ result.solved_suffix = kliknięć  ·  ^W podgląd  ·  ^S zapisz
 solve.nothing_walk   = Nic do odtworzenia — najpierw naciśnij Enter
 solve.nothing_save   = Nic do zapisania — najpierw naciśnij Enter
 solve.cracking      = łamanie zamka
+solve.tumblers      = Bębenki
+solve.example       = Wczytaj przykład
+solve.format        = Format i przykłady
+solve.err_complex   = Zamek zbyt złożony dla przeglądarki — spróbuj mniej bębenków
+solve.err_count     = Podaj jedną pozycję startową (1–7) dla każdego bębenka
 
 step.lock    = Zamek
 step.steps   = Kroki

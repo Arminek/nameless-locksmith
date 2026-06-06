@@ -2,7 +2,6 @@
 // solver port and the shared i18n + history data.
 
 import {
-  GOAL,
   buildMatrix,
   solve,
   applyClick,
@@ -37,7 +36,7 @@ const state = {
   screen: "lang",
   saved: loadSaved(),
   browse: { filter: "", sel: 0 },
-  solve: { name: "", rules: ["", "", "", "", "", ""], start: "", result: null, anim: false },
+  solve: { n: 6, name: "", rules: ["", "", "", "", "", ""], start: "", result: null },
   step: null,
 };
 if (state.lang && I18N[state.lang]) state.screen = "browse";
@@ -55,9 +54,9 @@ const HOLE0 = CX - 3 * SP; // x of hole 1 when the plate is centred (p=4)
 const ROW_H = 40;
 const TOP = 36;
 
-function buildLock() {
+function buildLock(n = 6) {
   const svg = document.createElementNS(SVGNS, "svg");
-  svg.setAttribute("viewBox", `0 0 460 ${TOP + 6 * ROW_H + 12}`);
+  svg.setAttribute("viewBox", `0 0 460 ${TOP + n * ROW_H + 12}`);
   svg.classList.add("locksvg");
   svg.style.width = "100%";
 
@@ -66,7 +65,7 @@ function buildLock() {
   guide.setAttribute("x1", CX);
   guide.setAttribute("x2", CX);
   guide.setAttribute("y1", TOP - 8);
-  guide.setAttribute("y2", TOP + 6 * ROW_H);
+  guide.setAttribute("y2", TOP + n * ROW_H);
   guide.setAttribute("stroke", "#57c7d455");
   guide.setAttribute("stroke-dasharray", "3 4");
   svg.append(guide);
@@ -80,8 +79,8 @@ function buildLock() {
   svg.append(goal);
 
   const rows = [];
-  for (let t = 5; t >= 0; t--) {
-    const y = TOP + (5 - t) * ROW_H + ROW_H / 2;
+  for (let t = n - 1; t >= 0; t--) {
+    const y = TOP + (n - 1 - t) * ROW_H + ROW_H / 2;
     const depth = t; // 0 = front
     const shade = 150 - depth * 14;
     const g = document.createElementNS(SVGNS, "g");
@@ -143,7 +142,7 @@ function buildLock() {
 
   function update(pos, { fast = false, active = null } = {}) {
     rows.forEach((r, idx) => {
-      const t = 5 - idx; // rows built top(5)..bottom(0); idx 0 => tumbler 6
+      const t = n - 1 - idx; // rows built top(n-1)..bottom(0); idx 0 => tumbler n
       const p = pos[t];
       r.g.classList.toggle("fast", fast);
       r.g.setAttribute("transform", `translate(${(4 - p) * SP},0)`);
@@ -208,6 +207,7 @@ function renderLangSelect() {
 }
 
 function renderLangPick() {
+  view.innerHTML = "";
   setStatus("");
   const grid = el("div", { className: "grid" });
   for (const l of LANGS) {
@@ -232,6 +232,7 @@ function renderLangPick() {
 }
 
 function renderBrowse() {
+  view.innerHTML = ""; // safe for direct re-renders (e.g. after delete)
   setStatus(`${tr("tab.browse")} · ${tr("tab.solve")} (Tab) · ${tr("step.open").replace(/✓ /, "")}`);
   const locks = allLocks();
   const q = state.browse.filter.toLowerCase();
@@ -293,8 +294,10 @@ function renderBrowse() {
     }
     const l = entry[0];
     detail.append(el("div", { className: "mono", style: "color:var(--brass-bright)", textContent: l.name }));
-    detail.append(el("div", { className: "muted", textContent: tr("label.rules") }));
-    for (let i = 0; i < 6; i++)
+    detail.append(
+      el("div", { className: "muted", textContent: `${tr("label.rules")} · ${l.rules.length} ${tr("step.tumbler")}` })
+    );
+    for (let i = 0; i < l.rules.length; i++)
       detail.append(el("div", { className: "mono", textContent: `  ${i + 1}: ${l.rules[i] || "-"}` }));
     detail.append(
       el("div", {
@@ -302,7 +305,7 @@ function renderBrowse() {
         textContent: l.start ? `Start  [${l.start.join(", ")}]` : `Start  ${tr("value.none")}`,
       })
     );
-    const canWalk = l.start && parseSolutionSteps(l.solution || []);
+    const canWalk = l.start && parseSolutionSteps(l.solution || [], l.rules.length);
     const walk = el("button", {
       className: "btn",
       textContent: `▶ ${tr("tab.step")}`,
@@ -330,7 +333,7 @@ function renderBrowse() {
 
 function openStepFromLock(l) {
   if (!l.start) return;
-  const groups = parseSolutionSteps(l.solution || []);
+  const groups = parseSolutionSteps(l.solution || [], l.rules.length);
   if (!groups) return;
   const { mat, err } = buildMatrix(l.rules);
   if (err) return setStatus(err);
@@ -339,21 +342,60 @@ function openStepFromLock(l) {
 
 // ---------- solve ----------
 
+// A worked example to load, so the format is concrete.
+const EXAMPLE = {
+  n: 6,
+  name: "Second chest in the tower",
+  rules: ["3r, 6l", "-", "1r, 4l, 6r", "2r, 5r, 6l", "-", "3l"],
+  start: "5, 3, 6, 7, 2, 7",
+};
+
+// Resize the rules array to N, keeping existing entries.
+function setTumblerCount(n) {
+  const s = state.solve;
+  s.n = n;
+  const r = s.rules.slice(0, n);
+  while (r.length < n) r.push("");
+  s.rules = r;
+}
+
 function renderSolve() {
+  view.innerHTML = ""; // safe for direct re-renders (tumbler count / example)
   setStatus(tr("status.solve").replace(/ · Esc.*/, ""));
   const s = state.solve;
   const form = el("div", { className: "solve-form" });
-  const mkRow = (labelText, value, on) => {
-    const input = el("input", { value, oninput: (e) => on(e.target.value) });
+  const mkRow = (labelText, value, on, attrs = {}) => {
+    const input = el("input", { value, oninput: (e) => on(e.target.value), ...attrs });
     return el("div", { className: "row" }, [el("label", { textContent: labelText }), input]);
   };
+
+  // tumbler-count selector (2..8)
+  const count = el("select");
+  for (let i = 2; i <= 8; i++) count.append(el("option", { value: i, textContent: i, selected: i === s.n }));
+  count.onchange = () => {
+    setTumblerCount(Number(count.value));
+    renderSolve();
+  };
+  form.append(el("div", { className: "row" }, [el("label", { textContent: tr("solve.tumblers") }), count]));
+
   form.append(mkRow(tr("field.name"), s.name, (v) => (s.name = v)));
-  for (let i = 0; i < 6; i++)
-    form.append(mkRow(`${tr("field.rule")} ${i + 1}`, s.rules[i], (v) => (s.rules[i] = v)));
-  form.append(mkRow("Start", s.start, (v) => (s.start = v)));
+  for (let i = 0; i < s.n; i++)
+    form.append(mkRow(`${tr("field.rule")} ${i + 1}`, s.rules[i] ?? "", (v) => (s.rules[i] = v)));
+  form.append(mkRow("Start", s.start, (v) => (s.start = v), { placeholder: Array(s.n).fill("4").join(", ") }));
   form.append(el("div", { className: "muted", textContent: tr("solve.hint") }));
+
   const solveBtn = el("button", { className: "btn", textContent: tr("solve.title"), onclick: runSolve });
-  form.append(el("div", { className: "btn-row" }, [solveBtn]));
+  const exBtn = el("button", {
+    className: "btn ghost",
+    textContent: tr("solve.example"),
+    onclick: () => {
+      setTumblerCount(EXAMPLE.n);
+      Object.assign(s, { name: EXAMPLE.name, rules: EXAMPLE.rules.slice(), start: EXAMPLE.start });
+      renderSolve();
+    },
+  });
+  form.append(el("div", { className: "btn-row" }, [solveBtn, exBtn]));
+  form.append(formatHelp());
 
   const result = el("div", { className: "card", id: "solve-result" }, [
     el("h2", { textContent: tr("result.title") }),
@@ -371,38 +413,78 @@ function renderSolve() {
   if (s.result) showSolveResult(s.result);
 }
 
+// Collapsible format reference with a worked example.
+function formatHelp() {
+  const d = el("details", { className: "help" });
+  d.append(el("summary", { textContent: tr("solve.format") }));
+  const body = el("div", { className: "help-body" });
+  const p = (html) => {
+    const e = el("p");
+    e.innerHTML = html;
+    return e;
+  };
+  body.append(
+    p(
+      "Each lock has <b>2–8 tumblers</b> (plates) on a <b>1–7</b> track. The goal is every plate centred on <b>4</b>."
+    ),
+    p(
+      "A <b>rule</b> describes what happens to the <i>other</i> plates when you press <b>[D]</b> on that tumbler:"
+    ),
+    p(
+      "&nbsp;&nbsp;<code>r</code> = that plate slides <b>right</b> &nbsp; <code>l</code> = slides <b>left</b> &nbsp; <code>-</code> = nothing moves"
+    ),
+    p("<b>Start</b> = the current position (1–7) of each plate, left to right."),
+    p("<b>Example</b> (6 tumblers):"),
+    el("pre", { className: "mono", textContent:
+      "Rule 1: 3r, 6l    → [D] on 1 slides plate 3 right, plate 6 left\n" +
+      "Rule 2: -\n" +
+      "Rule 3: 1r, 4l, 6r\n" +
+      "Rule 4: 2r, 5r, 6l\n" +
+      "Rule 5: -\n" +
+      "Rule 6: 3l\n" +
+      "Start:  5, 3, 6, 7, 2, 7      → solves in 52 clicks" }),
+    p("<b>Output:</b> <code>4: 2x D</code> means press <b>[D]</b> twice on tumbler 4. [A] is the opposite of [D]."),
+    p("<i>Tip:</i> if a plate is jammed at a wall (1 or 7), a [D] press can be blocked and hide a dependency — nudge plates toward the middle before reading the rules.")
+  );
+  d.append(body);
+  return d;
+}
+
 async function runSolve() {
   const s = state.solve;
   const start = parseStart(s.start);
-  if (!start) return showResultMessage(`✗ ${tr("solve.err_start")}`, "error");
-  const { mat, err } = buildMatrix(s.rules);
+  if (start.length !== s.n)
+    return showResultMessage(`✗ ${tr("solve.err_count")} (${s.n})`, "error");
+  const { mat, err } = buildMatrix(s.rules.slice(0, s.n));
   if (err) return showResultMessage(`✗ ${err}`, "error");
   const sol = solve(start, mat);
+  if (sol && sol.err === "too-complex")
+    return showResultMessage(`✗ ${tr("solve.err_complex")}`, "error");
   if (!sol) return showResultMessage(`✗ ${tr("solve.err_nosolution")}`, "error");
 
-  s.result = { sol, mat, start, name: s.name.trim() || tr("value.unnamed") };
-  await playCrack(); // satisfying cracking animation
+  s.result = { sol, mat, start, n: s.n, name: s.name.trim() || tr("value.unnamed") };
+  await playCrack(s.n); // satisfying cracking animation
   showSolveResult(s.result);
 }
 
 // Spin the plates, then settle them onto hole 4 one at a time.
-async function playCrack() {
+async function playCrack(n) {
   const body = $("#result-body");
   body.innerHTML = "";
-  const lock = buildLock();
+  const lock = buildLock(n);
   body.append(
     el("div", { className: "muted", style: "text-align:center;margin-bottom:6px", textContent: `${tr("solve.cracking")} …` }),
     lock.svg
   );
-  const pos = [1, 1, 1, 1, 1, 1];
+  const pos = Array(n).fill(1);
   // spin phase
   for (let f = 0; f < 14; f++) {
-    for (let t = 0; t < 6; t++) pos[t] = ((f + t * 2) % 7) + 1;
+    for (let t = 0; t < n; t++) pos[t] = ((f + t * 2) % 7) + 1;
     lock.update(pos, { fast: true });
     await sleep(55);
   }
   // cascade settle
-  for (let t = 0; t < 6; t++) {
+  for (let t = 0; t < n; t++) {
     pos[t] = 4;
     lock.update(pos, {});
     await sleep(140);
@@ -418,7 +500,7 @@ function showResultMessage(msg, cls) {
   body.append(el("div", { className: cls || "", textContent: msg }));
 }
 
-function showSolveResult({ sol, mat, start, name }) {
+function showSolveResult({ sol, mat, start, name, n }) {
   const body = $("#result-body");
   if (!body) return;
   body.innerHTML = "";
@@ -430,7 +512,7 @@ function showSolveResult({ sol, mat, start, name }) {
     className: "btn ghost",
     textContent: `💾 ${tr("msg.saved")}`,
     onclick: () => {
-      state.saved.push({ name, rules: state.solve.rules.slice(), start: start.slice(), solution: sol.steps.map(stepLine) });
+      state.saved.push({ name, rules: state.solve.rules.slice(0, n), start: start.slice(), solution: sol.steps.map(stepLine) });
       persist();
       setStatus(`${tr("msg.saved")} "${name}"`);
     },
@@ -479,8 +561,9 @@ function renderStep() {
     state.screen = "browse";
     return render();
   }
+  view.innerHTML = "";
   setStatus(tr("status.step").replace(/ · Esc.*/, ""));
-  const lock = buildLock();
+  const lock = buildLock(st.start.length);
   const moveBox = el("div", { className: "move" });
   const stepsList = el("ul", { className: "steps" });
   const progress = el("div", { className: "progress" });
@@ -524,7 +607,7 @@ function renderStep() {
     const centered = pos.filter((p) => p === 4).length;
     progress.textContent = solved
       ? ""
-      : `${tr("step.click")} ${st.idx} / ${st.clicks.length}  ·  ${centered}/6 ${tr("step.pins")}`;
+      : `${tr("step.click")} ${st.idx} / ${st.clicks.length}  ·  ${centered}/${st.start.length} ${tr("step.pins")}`;
   };
 
   const go = (d) => {

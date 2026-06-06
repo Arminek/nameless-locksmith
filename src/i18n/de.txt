@@ -40,6 +40,11 @@ result.solved_suffix = Klicks  ·  ^W abspielen  ·  ^S speichern
 solve.nothing_walk   = Nichts abzuspielen — zuerst Enter zum Lösen
 solve.nothing_save   = Nichts zu speichern — zuerst Enter zum Lösen
 solve.cracking      = Schloss wird geknackt
+solve.tumblers      = Zuhaltungen
+solve.example       = Beispiel laden
+solve.format        = Format & Beispiele
+solve.err_complex   = Schloss zu komplex für den Browser — weniger Zuhaltungen versuchen
+solve.err_count     = Gib eine Startposition (1–7) pro Zuhaltung an
 
 step.lock    = Schloss
 step.steps   = Schritte

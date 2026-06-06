@@ -1,0 +1,52 @@
+# nameless-locksmith UI strings — English.
+#
+# Format: `key = value`. Lines starting with '#' and blank lines are ignored;
+# the first '=' splits key from value, and surrounding whitespace is trimmed.
+#
+# To add a language:
+#   1. Copy this file to src/i18n/<code>.txt and translate the values.
+#   2. Register it in the LANGUAGES table near the top of src/tui.rs.
+# Missing keys fall back to English, so a partial translation still works.
+
+tab.browse = Browse
+tab.solve  = Solve
+tab.step   = Step
+
+status.browse = Browse — ↑↓ move · / filter · Enter walk · Tab solve · q quit
+status.solve  = Solve — Tab/↑↓ fields · Enter solve · ^W walk · ^S save · Esc back
+status.step   = Step — →/Space next · ← prev · g reset · G end · Esc back
+status.filter = Filter — type to match names · Enter apply · Esc clear
+
+filter.title       = Filter
+filter.placeholder = / to filter
+locks.title        = Locks
+detail.title       = Detail
+detail.empty       = No locks match the filter.
+
+label.rules    = Rules
+label.solution = Solution
+label.steps    = steps
+value.none     = (none)
+value.unnamed  = unnamed
+msg.cantwalk   = Can't walk
+msg.saved      = Saved
+
+solve.title          = Solve a lock
+field.name           = Name
+field.rule           = Rule
+solve.hint           = r = plate right, l = plate left, - = nothing. Start = 6 positions 1..7.
+result.title         = Result
+result.empty         = Fill the form, then press Enter to solve.
+solve.err_start      = Start needs 6 numbers, e.g. 5, 3, 6, 7, 2, 7
+solve.err_nosolution = No solution without hitting a wall — re-check the rules/start.
+solve.solved_prefix  = Solved in
+solve.solved_suffix  = clicks — ^W walk, ^S save
+result.solved_suffix = clicks  ·  ^W walk  ·  ^S save
+solve.nothing_walk   = Nothing to walk — press Enter to solve first
+solve.nothing_save   = Nothing to save — press Enter to solve first
+
+step.lock  = Lock
+step.steps = Steps
+step.open  = ✓ OPEN — all pins centered on hole 4
+step.click = click
+step.pins  = pins on 4

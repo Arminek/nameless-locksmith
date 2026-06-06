@@ -14,21 +14,40 @@
 
 **Start:** `[1, 4, 5, 2, 1, 4]`
 
-**Solution:**
+**Solution:** (35 clicks — verified optimal by BFS via the `locks` solver; the
+original hand-entry started `5: 6x D`, which drove plate 5 from 1 below the wall)
 ```
-5: 6x D
-1: 2x D
-3: 1x A
-4: 2x D
-1: 3x D
-3: 2x A
-4: 3x D
-5: 5x D
-1: 4x D
-6: 4x D
-4: 1x D
-3: 1x A
-5: 1x D
+3: 1x D
+5: 1x A
+1: 1x A
+4: 1x A
+3: 1x D
+5: 1x A
+1: 1x A
+4: 1x A
+3: 1x D
+5: 1x A
+1: 1x A
+4: 1x A
+5: 1x A
+1: 1x A
+4: 1x A
+5: 1x A
+1: 1x A
+4: 1x A
+5: 1x A
+1: 1x A
+4: 1x A
+5: 1x A
+1: 1x A
+5: 1x A
+1: 1x A
+5: 1x A
+1: 1x A
+5: 3x A
+6: 1x A
+3: 1x D
+6: 3x A
 ```
 
 ---
@@ -197,10 +216,17 @@
 
 **Start:** `[5, 3, 6, 7, 2, 7]`
 
-**Solution:** (52 clicks — verified optimal by BFS via the `locks` solver)
+**Solution:** (52 clicks — verified optimal by BFS via the `locks` solver; the
+previous entry was 56 clicks and ended with plate 6 at 5 — pre-dated the tumbler-4
+`5r` re-measurement)
 ```
 1: 1x A
 2: 4x A
+4: 1x D
+2: 1x A
+3: 1x D
+1: 1x A
+5: 1x A
 4: 1x D
 2: 1x A
 3: 1x D

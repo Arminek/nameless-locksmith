@@ -1,11 +1,30 @@
 # nameless-locksmith
 
-A tiny command-line solver and history manager for the **lock-picking minigame in Gothic Remake**.
+A command-line **and terminal-UI** solver and history manager for the **lock-picking minigame
+in Gothic Remake**.
 
 Each lock has 6 interconnected tumblers (plates) that slide along a 1–7 track. Moving one
 tumbler forces others to move, and no plate may ever fall below 1 or past 7. The goal is to
 center every plate at position **4**. `locks` finds the **shortest wall-safe key sequence**
 via breadth-first search over all 7⁶ plate states, and keeps a log of every lock you've solved.
+
+## Interactive TUI
+
+Run `locks` with no arguments to open the terminal UI (built with
+[ratatui](https://ratatui.rs/)). On startup it asks for a language (**English / Polski**), then
+gives you three views:
+
+- **Browse** — a filterable list of your solved locks with a detail pane.
+- **Solve** — an in-place form (6 rules + start) that runs the solver and shows the result.
+- **Step** — walk a solution one click at a time. The plates render as a receding stack with
+  tumbler 1 in the foreground, and animate the way the game does: the **plate slides while the
+  pin stays put**, seating on hole 4 when centered.
+
+All the `locks <subcommand>` commands below still work unchanged.
+
+Adding a UI language is just dropping a `key = value` file in [`src/i18n/`](src/i18n/) and
+registering one row in `LANGUAGES` (see [`src/i18n/en.txt`](src/i18n/en.txt)); missing keys fall
+back to English.
 
 ## Install
 
@@ -17,11 +36,13 @@ cargo build --release
 # binary at target/release/locks (locks.exe on Windows)
 ```
 
-No external dependencies — std-only Rust.
+The core solver is std-only Rust; the TUI adds `ratatui` + `crossterm`. The step view uses
+24-bit color, so a truecolor terminal renders the plate shading best.
 
 ## Quick start
 
 ```sh
+locks                         # launch the interactive TUI
 locks list                    # list every lock in the history
 locks show "Second chest"     # show one lock's rules, start, and solution
 locks find tower              # search lock names

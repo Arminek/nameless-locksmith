@@ -1,0 +1,45 @@
+# nameless-locksmith UI strings — Polski (Polish).
+# Format: `key = value`. See src/i18n/en.txt for the full guide.
+
+tab.browse = Przeglądaj
+tab.solve  = Rozwiąż
+tab.step   = Krok
+
+status.browse = Przeglądaj — ↑↓ ruch · / filtr · Enter podgląd · Tab rozwiąż · q wyjście
+status.solve  = Rozwiązuj — Tab/↑↓ pola · Enter licz · ^W podgląd · ^S zapisz · Esc wstecz
+status.step   = Krok — →/Spacja dalej · ← wstecz · g reset · G koniec · Esc wstecz
+status.filter = Filtr — pisz aby dopasować · Enter zatwierdź · Esc wyczyść
+
+filter.title       = Filtr
+filter.placeholder = / aby filtrować
+locks.title        = Zamki
+detail.title       = Szczegóły
+detail.empty       = Brak pasujących zamków.
+
+label.rules    = Reguły
+label.solution = Rozwiązanie
+label.steps    = kroków
+value.none     = (brak)
+value.unnamed  = bez nazwy
+msg.cantwalk   = Nie można odtworzyć
+msg.saved      = Zapisano
+
+solve.title          = Rozwiąż zamek
+field.name           = Nazwa
+field.rule           = Reguła
+solve.hint           = r = płyta w prawo, l = płyta w lewo, - = nic. Start = 6 pozycji 1..7.
+result.title         = Wynik
+result.empty         = Wypełnij formularz i naciśnij Enter.
+solve.err_start      = Start wymaga 6 liczb, np. 5, 3, 6, 7, 2, 7
+solve.err_nosolution = Brak rozwiązania bez uderzenia o ścianę — sprawdź reguły/start.
+solve.solved_prefix  = Rozwiązano w
+solve.solved_suffix  = kliknięć — ^W podgląd, ^S zapisz
+result.solved_suffix = kliknięć  ·  ^W podgląd  ·  ^S zapisz
+solve.nothing_walk   = Nic do odtworzenia — najpierw naciśnij Enter
+solve.nothing_save   = Nic do zapisania — najpierw naciśnij Enter
+
+step.lock  = Zamek
+step.steps = Kroki
+step.open  = ✓ OTWARTE — wszystkie piny na otworze 4
+step.click = klik
+step.pins  = pinów na 4

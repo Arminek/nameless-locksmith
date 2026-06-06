@@ -799,21 +799,29 @@ impl App {
         let [move_area, steps_area] =
             Layout::vertical([Constraint::Length(7), Constraint::Fill(1)]).areas(right);
 
+        let key_col = Color::Rgb(255, 190, 70);
         let move_lines: Vec<Line> = if solved {
-            let big = big_text("OPEN");
-            let mut v = vec![Line::from("")];
-            v.extend(big.into_iter().map(|r| Line::from(r.fg(Color::Green).bold())));
-            v
+            vec![
+                Line::from(""),
+                Line::from("✓ OPEN".fg(Color::Green).bold()),
+                Line::from(""),
+                Line::from("◉ ◉ ◉ ◉ ◉ ◉".fg(Color::Green).bold()),
+            ]
         } else if let Some(g) = cur {
             let (t, k, n) = groups[g];
-            let big = big_text(&format!("{} {}×{}", t, n, k));
-            let brass = Color::Rgb(255, 190, 70);
-            let mut v: Vec<Line> = big.into_iter().map(|r| Line::from(r.fg(brass).bold())).collect();
+            let cap = keycap(k);
             // direction arrows: one per press, D = plate right, A = plate left
             let arrow = if k == 'D' { "→" } else { "←" };
             let arrows = vec![arrow; n].join(" ");
-            v.push(Line::from(format!("{}  {}", k, arrows).fg(Color::White).bold()));
-            v
+            // Keep the three keycap lines the same width so centering aligns them;
+            // the count + arrows go on their own line below.
+            vec![
+                Line::from(format!("▶ {} {}", self.tr("step.tumbler"), t).fg(Color::Yellow).bold()),
+                Line::from(cap[0].clone().fg(key_col)),
+                Line::from(cap[1].clone().fg(key_col).bold()),
+                Line::from(cap[2].clone().fg(key_col)),
+                Line::from(format!("× {}   {}", n, arrows).fg(Color::White).bold()),
+            ]
         } else {
             vec![]
         };
@@ -966,8 +974,10 @@ fn lock_detail_lines(l: &Lock, i18n: &I18n) -> Vec<Line<'static>> {
 // Column (0-based) where every plate's PIN sits, so the pins line up vertically
 // across all tumblers. = marker(2) + label(2) + CENTER slots * 2 chars each.
 const PIN_COL: usize = 2 + 2 + (PLATE_CENTER as usize) * 2;
-const PLATE_SLOTS: i32 = 13; // visible width of the sliding plate, in holes
-const PLATE_CENTER: i32 = 6; // the fixed pin column (slot index)
+// 15 slots with the pin at slot 7 keeps BOTH plate edges on screen for every
+// position 1..7 (the plate spans 9 cells and slides ±6 around the centre).
+const PLATE_SLOTS: i32 = 15;
+const PLATE_CENTER: i32 = 7; // the fixed pin column (slot index)
 
 // One tumbler plate. The PIN is fixed at a shared centre column (PIN_COL); the
 // row of holes (and the goal hole, position 4) slides past it as `p` changes —
@@ -1033,43 +1043,13 @@ fn plate_line(t: usize, p: i32, is_target: bool) -> Line<'static> {
     Line::from(spans)
 }
 
-// ----- big block font, for the prominent "current move" panel -----
-
-// A 3-row block glyph for the small charset the move banner needs.
-fn big_glyph(c: char) -> [&'static str; 3] {
-    match c {
-        '0' => ["█▀█", "█ █", "█▄█"],
-        '1' => ["▄█ ", " █ ", "▄█▄"],
-        '2' => ["█▀█", " ▄▀", "█▄▄"],
-        '3' => ["█▀█", " ▀█", "█▄█"],
-        '4' => ["█ █", "█▄█", "  █"],
-        '5' => ["█▀▀", "▀▀█", "▀▀█"],
-        '6' => ["█▀▀", "█▀█", "█▄█"],
-        '7' => ["▀▀█", "  █", "  █"],
-        '8' => ["█▀█", "█▀█", "█▄█"],
-        '9' => ["█▀█", "█▄█", "▄▄█"],
-        'A' => ["█▀█", "█▀█", "█ █"],
-        'D' => ["█▀▖", "█ █", "█▄▘"],
-        'O' => ["█▀█", "█ █", "█▄█"],
-        'P' => ["█▀█", "█▀▘", "█  "],
-        'E' => ["█▀▀", "█▀▀", "█▄▄"],
-        'N' => ["█▖█", "█▝█", "█ █"],
-        '×' => ["   ", "▙▟", "▛▜"],
-        _ => ["   ", "   ", "   "], // space / unknown
-    }
-}
-
-// Render `s` as three rows of block text.
-fn big_text(s: &str) -> [String; 3] {
-    let mut rows = [String::new(), String::new(), String::new()];
-    for c in s.chars() {
-        let g = big_glyph(c);
-        for (r, row) in rows.iter_mut().enumerate() {
-            row.push_str(g[r]);
-            row.push(' ');
-        }
-    }
-    rows
+// A three-row keycap around a key letter, e.g.  ╭───╮ / │ D │ / ╰───╯
+fn keycap(k: char) -> [String; 3] {
+    [
+        "╭───╮".to_string(),
+        format!("│ {} │", k),
+        "╰───╯".to_string(),
+    ]
 }
 
 #[cfg(test)]
@@ -1117,6 +1097,17 @@ mod tests {
 
     fn key(c: char) -> KeyEvent {
         KeyEvent::new(KeyCode::Char(c), KeyModifiers::NONE)
+    }
+
+    // Both plate edges must stay on screen for every pin position 1..7.
+    #[test]
+    fn plate_edges_visible_at_every_position() {
+        for p in 1..=7 {
+            let line = plate_line(0, p, false);
+            let s: String = line.spans.iter().map(|sp| sp.content.as_ref()).collect();
+            assert!(s.contains('▕'), "left edge missing at position {}", p);
+            assert!(s.contains('▏'), "right edge missing at position {}", p);
+        }
     }
 
     // Pressing 'd' then 'y' in Browse removes the selected lock from the file.

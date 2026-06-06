@@ -21,7 +21,8 @@ Run `locks` with no arguments to open the terminal UI (built with
 - **Step** — walk a solution one click at a time. The six plates are stacked and **aligned**, so
   any tumblers at the same position line up; the plate slides while the pin stays put (as in the
   game), each pin turning green as it seats on hole 4. The lock is open when all six form one
-  vertical column at the centre. A big panel shows the current move and the steps scroll alongside.
+  vertical column at the centre. A keycap panel shows which key to press (and how many times), and
+  the steps scroll alongside.
 
 All the `locks <subcommand>` commands below still work unchanged.
 
@@ -74,16 +75,16 @@ panel, and the scrolling checklist (`✓` done · `▶` current):
 ```
  nameless-locksmith    Browse   Solve   Step
 ┌Lock — Chest above Cavalorn's cottage ──────┐┌Current move (9/31)─────────────┐
-│                ▼  4                        ││      █▀█     ▄█      █▀▖        │
-│ align every pin on hole 4                  ││        ▀█      █  ▙▟ █ █        │
-│  6         ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏ 2             ││       █▄█     ▄█▄ ▛▜ █▄▘        │
-│  5           ▕ ◉ ○ ○ ◌ ○ ○ ○ 1             ││              D  →               │
-│  4         ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏ 2             │└────────────────────────────────┘
-│▶ 3       ▕ ○ ○ ◉ ◌ ○ ○ ○ ▏   3             │┌Steps (9/31)────────────────────┐
-│  2     ▕ ○ ○ ○ ◉ ○ ○ ○ ▏     ✓             ││✓ 3   1× D                      │
-│  1           ▕ ◉ ○ ○ ◌ ○ ○ ○ 1             ││✓ 5   1× A   ⋮                  │
-│                                            ││▶ 3   1× D                      │
-│click 8 / 35   · 1/6 pins on 4              ││  5   1× A                      │
+│                  ▼  4                      ││           ▶ tumbler 3          │
+│ align every pin on hole 4                  ││              ╭───╮             │
+│  6           ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏   2         ││              │ D │             │
+│  5             ▕ ◉ ○ ○ ◌ ○ ○ ○ ▏ 1         ││              ╰───╯             │
+│  4           ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏   2         ││             × 1   →            │
+│▶ 3         ▕ ○ ○ ◉ ◌ ○ ○ ○ ▏     3         │└────────────────────────────────┘
+│  2       ▕ ○ ○ ○ ◉ ○ ○ ○ ▏       ✓         │┌Steps (9/31)────────────────────┐
+│  1             ▕ ◉ ○ ○ ◌ ○ ○ ○ ▏ 1         ││✓ 3   1× D                      │
+│                                            ││✓ 5   1× A   ⋮                  │
+│click 8 / 35   · 1/6 pins on 4              ││▶ 3   1× D                      │
 └────────────────────────────────────────────┘└────────────────────────────────┘
 Step — →/Space next · ← prev · g reset · G end · Esc back
 ```

@@ -43,6 +43,7 @@ solve.nothing_save   = Nichts zu speichern — zuerst Enter zum Lösen
 step.lock    = Schloss
 step.steps   = Schritte
 step.current = Aktueller Zug
+step.tumbler = Zuhaltung
 step.goal    = jeden Stift auf Loch 4 ausrichten
 step.open    = ✓ OFFEN — alle Stifte auf Loch 4 zentriert
 step.click   = Klick

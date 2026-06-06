@@ -43,6 +43,7 @@ solve.nothing_save   = Нечего сохранять — сначала наж
 step.lock    = Замок
 step.steps   = Шаги
 step.current = Текущий ход
+step.tumbler = диск
 step.goal    = выровняйте все штифты на отверстии 4
 step.open    = ✓ ОТКРЫТО — все штифты на отверстии 4
 step.click   = клик

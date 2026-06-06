@@ -43,6 +43,7 @@ solve.nothing_save   = Nada que guardar — pulsa Enter para resolver
 step.lock    = Cerradura
 step.steps   = Pasos
 step.current = Movimiento actual
+step.tumbler = tambor
 step.goal    = alinea cada pasador en el orificio 4
 step.open    = ✓ ABIERTA — todos los pasadores centrados en el orificio 4
 step.click   = clic

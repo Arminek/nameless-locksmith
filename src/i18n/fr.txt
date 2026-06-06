@@ -43,6 +43,7 @@ solve.nothing_save   = Rien à enregistrer — appuyez sur Entrée pour résoudr
 step.lock    = Serrure
 step.steps   = Étapes
 step.current = Coup actuel
+step.tumbler = disque
 step.goal    = alignez chaque goupille sur le trou 4
 step.open    = ✓ OUVERTE — toutes les goupilles centrées sur le trou 4
 step.click   = clic

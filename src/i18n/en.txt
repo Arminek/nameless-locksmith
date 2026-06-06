@@ -50,6 +50,7 @@ solve.nothing_save   = Nothing to save — press Enter to solve first
 step.lock    = Lock
 step.steps   = Steps
 step.current = Current move
+step.tumbler = tumbler
 step.goal    = align every pin on hole 4
 step.open    = ✓ OPEN — all pins centered on hole 4
 step.click   = click

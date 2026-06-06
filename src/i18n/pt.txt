@@ -43,6 +43,7 @@ solve.nothing_save   = Nada para guardar — pressione Enter para resolver
 step.lock    = Fechadura
 step.steps   = Passos
 step.current = Movimento atual
+step.tumbler = tambor
 step.goal    = alinhe cada pino no furo 4
 step.open    = ✓ ABERTA — todos os pinos centrados no furo 4
 step.click   = clique

@@ -369,6 +369,47 @@ pub fn append_lock(
     fs::write(file, existing).map_err(|e| format!("cannot write {}: {}", file, e))
 }
 
+// Return `text` with the lock at `index` (0-based, in `parse_history` order)
+// removed. A lock's section runs from its `## ` header to just before the next
+// one (or end of file), so dropping that line range cleanly removes the entry.
+// Returns None if `index` is out of range.
+pub fn remove_lock(text: &str, index: usize) -> Option<String> {
+    let lines: Vec<&str> = text.lines().collect();
+    let starts: Vec<usize> = lines
+        .iter()
+        .enumerate()
+        .filter(|(_, l)| l.starts_with("## "))
+        .map(|(i, _)| i)
+        .collect();
+    let start = *starts.get(index)?;
+    let end = starts.get(index + 1).copied().unwrap_or(lines.len());
+
+    let mut out: Vec<&str> = Vec::with_capacity(lines.len());
+    out.extend_from_slice(&lines[..start]);
+    out.extend_from_slice(&lines[end..]);
+    // Trim any trailing blank lines left behind, then end with a single newline.
+    while out.last().is_some_and(|l| l.trim().is_empty()) {
+        out.pop();
+    }
+    let mut s = out.join("\n");
+    s.push('\n');
+    Some(s)
+}
+
+// Remove the lock at `index` from the history file, rewriting it in place.
+// Returns the removed lock's name on success.
+pub fn remove_lock_from_file(file: &str, index: usize) -> Result<String, String> {
+    let text = fs::read_to_string(file).map_err(|e| format!("cannot read {}: {}", file, e))?;
+    let name = parse_history(&text)
+        .get(index)
+        .map(|l| l.name.clone())
+        .ok_or_else(|| format!("no lock at position {}", index + 1))?;
+    let updated =
+        remove_lock(&text, index).ok_or_else(|| format!("no lock at position {}", index + 1))?;
+    fs::write(file, updated).map_err(|e| format!("cannot write {}: {}", file, e))?;
+    Ok(name)
+}
+
 // ---------- tests ----------
 
 #[cfg(test)]
@@ -534,6 +575,22 @@ mod tests {
         assert_eq!(l.rules[0], "2l");
         assert_eq!(l.start, Some([3, 4, 5, 6, 7, 1]));
         assert_eq!(l.solution, vec!["1: 2x D".to_string(), "2: 1x A".to_string()]);
+    }
+
+    #[test]
+    fn remove_lock_drops_the_right_section() {
+        let md = "\
+# History\n\n## A\n\n**Start:** `[1, 1, 1, 1, 1, 1]`\n\n## B\n\nbody b\n\n## C\n\nbody c\n";
+        // remove the middle lock
+        let after = remove_lock(md, 1).unwrap();
+        let names: Vec<String> = parse_history(&after).into_iter().map(|l| l.name).collect();
+        assert_eq!(names, vec!["A".to_string(), "C".to_string()]);
+        // remove the last lock
+        let after_last = remove_lock(&after, 1).unwrap();
+        let names: Vec<String> = parse_history(&after_last).into_iter().map(|l| l.name).collect();
+        assert_eq!(names, vec!["A".to_string()]);
+        // out of range
+        assert!(remove_lock(md, 9).is_none());
     }
 
     #[test]

@@ -5,7 +5,7 @@ tab.browse = Explorar
 tab.solve  = Resolver
 tab.step   = Passo
 
-status.browse = Explorar — ↑↓ mover · / filtrar · Enter reproduzir · Tab resolver · q sair
+status.browse = Explorar — ↑↓ mover · / filtrar · Enter reproduzir · d eliminar · Tab resolver · q sair
 status.solve  = Resolver — Tab/↑↓ campos · Enter resolver · ^W reproduzir · ^S guardar · Esc voltar
 status.step   = Passo — →/Space próximo · ← anterior · g reiniciar · G fim · Esc voltar
 status.filter = Filtro — digite para buscar · Enter aplicar · Esc limpar
@@ -23,6 +23,8 @@ value.none     = (nenhum)
 value.unnamed  = sem nome
 msg.cantwalk   = Não é possível reproduzir
 msg.saved      = Guardado
+browse.delete  = Eliminar
+browse.deleted = Removido
 
 solve.title          = Resolver uma fechadura
 field.name           = Nome

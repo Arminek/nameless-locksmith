@@ -12,7 +12,7 @@ tab.browse = Browse
 tab.solve  = Solve
 tab.step   = Step
 
-status.browse = Browse — ↑↓ move · / filter · Enter walk · Tab solve · q quit
+status.browse = Browse — ↑↓ move · / filter · Enter walk · d delete · Tab solve · q quit
 status.solve  = Solve — Tab/↑↓ fields · Enter solve · ^W walk · ^S save · Esc back
 status.step   = Step — →/Space next · ← prev · g reset · G end · Esc back
 status.filter = Filter — type to match names · Enter apply · Esc clear
@@ -30,6 +30,8 @@ value.none     = (none)
 value.unnamed  = unnamed
 msg.cantwalk   = Can't walk
 msg.saved      = Saved
+browse.delete  = Delete
+browse.deleted = Removed
 
 solve.title          = Solve a lock
 field.name           = Name

@@ -19,8 +19,8 @@ use std::io::Read;
 use std::process::exit;
 
 use nameless_locksmith::{
-    append_lock, build_matrix, parse_history, parse_input, solution_lines, solve, Lock,
-    DEFAULT_FILE,
+    append_lock, build_matrix, parse_history, parse_input, remove_lock_from_file, solution_lines,
+    solve, Lock, DEFAULT_FILE,
 };
 
 mod tui;
@@ -119,6 +119,7 @@ COMMANDS\n\
   locks find <query>              Search lock names (case-insensitive).\n\
   locks template                  Print a ready-to-fill input file for `solve`.\n\
   locks solve <input|->  [opts]   Solve a lock from a file (or stdin via \"-\").\n\
+  locks remove <index|substring>  Delete a lock from the history (alias: rm).\n\
   locks help                      Show this help.\n\
 \n\
 SOLVE OPTIONS\n\
@@ -237,6 +238,51 @@ fn main() {
             }
             if !shown {
                 println!("no lock matches \"{}\"", q);
+            }
+        }
+        "remove" | "rm" | "delete" => {
+            if args.is_empty() {
+                usage();
+            }
+            let q = &args[0];
+            let locks = parse_history(&read_source(&file));
+            // Resolve the argument to a single lock index (0-based).
+            let idx = if let Ok(n) = q.parse::<usize>() {
+                if n >= 1 && n <= locks.len() {
+                    Some(n - 1)
+                } else {
+                    eprintln!("no lock at position {} (history has {})", n, locks.len());
+                    exit(1);
+                }
+            } else {
+                let ql = q.to_lowercase();
+                let matches: Vec<usize> = locks
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, l)| l.name.to_lowercase().contains(&ql))
+                    .map(|(i, _)| i)
+                    .collect();
+                match matches.as_slice() {
+                    [] => {
+                        println!("no lock matches \"{}\"", q);
+                        exit(1);
+                    }
+                    [one] => Some(*one),
+                    many => {
+                        eprintln!("\"{}\" matches {} locks — be more specific:", q, many.len());
+                        for &i in many {
+                            eprintln!("  {}. {}", i + 1, locks[i].name);
+                        }
+                        exit(1);
+                    }
+                }
+            };
+            match remove_lock_from_file(&file, idx.unwrap()) {
+                Ok(name) => println!("Removed \"{}\" from {}", name, file),
+                Err(e) => {
+                    eprintln!("{}", e);
+                    exit(1);
+                }
             }
         }
         "solve" => {

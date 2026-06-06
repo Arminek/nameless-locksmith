@@ -5,7 +5,7 @@ tab.browse = Обзор
 tab.solve  = Решить
 tab.step   = Шаг
 
-status.browse = Обзор — ↑↓ перемещение · / фильтр · Enter показать · Tab решить · q выход
+status.browse = Обзор — ↑↓ перемещение · / фильтр · Enter показать · d удалить · Tab решить · q выход
 status.solve  = Решение — Tab/↑↓ поля · Enter решить · ^W показать · ^S сохранить · Esc назад
 status.step   = Шаг — →/Space далее · ← назад · g сброс · G конец · Esc назад
 status.filter = Фильтр — вводите для поиска · Enter применить · Esc очистить
@@ -23,6 +23,8 @@ value.none     = (нет)
 value.unnamed  = без имени
 msg.cantwalk   = Невозможно показать
 msg.saved      = Сохранено
+browse.delete  = Удалить
+browse.deleted = Удалено
 
 solve.title          = Решить замок
 field.name           = Имя

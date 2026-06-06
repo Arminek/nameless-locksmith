@@ -23,7 +23,8 @@ use ratatui::{
 };
 
 use nameless_locksmith::{
-    append_lock, build_matrix, parse_history, parse_solution_steps, solve, Lock, Solution, GOAL,
+    append_lock, build_matrix, parse_history, parse_solution_steps, remove_lock_from_file, solve,
+    Lock, Solution, GOAL,
 };
 
 // ---------- public entry point ----------
@@ -116,8 +117,9 @@ struct App {
 
 struct BrowseState {
     filter: String,
-    filtering: bool, // editing the filter box
-    selected: usize, // index into the filtered list
+    filtering: bool,      // editing the filter box
+    confirm_delete: bool, // awaiting y/n confirmation to delete the selected lock
+    selected: usize,      // index into the filtered list
     list_state: ListState,
 }
 
@@ -218,6 +220,7 @@ impl App {
             browse: BrowseState {
                 filter: String::new(),
                 filtering: false,
+                confirm_delete: false,
                 selected: 0,
                 list_state,
             },
@@ -290,6 +293,16 @@ impl App {
     }
 
     fn on_key_browse(&mut self, key: KeyEvent) {
+        if self.browse.confirm_delete {
+            match key.code {
+                KeyCode::Char('y') | KeyCode::Char('Y') | KeyCode::Enter => self.delete_selected(),
+                _ => {
+                    self.browse.confirm_delete = false;
+                    self.status = self.tr("status.browse").to_string();
+                }
+            }
+            return;
+        }
         if self.browse.filtering {
             match key.code {
                 KeyCode::Esc => {
@@ -321,8 +334,37 @@ impl App {
             }
             KeyCode::Down | KeyCode::Char('j') => self.move_selection(1),
             KeyCode::Up | KeyCode::Char('k') => self.move_selection(-1),
+            KeyCode::Char('d') | KeyCode::Delete => self.request_delete(),
             KeyCode::Enter => self.enter_step_from_browse(),
             _ => {}
+        }
+    }
+
+    fn request_delete(&mut self) {
+        let name = match self.selected_lock() {
+            Some(l) => l.name.clone(),
+            None => return,
+        };
+        self.browse.confirm_delete = true;
+        self.status = format!("{} \"{}\"?  (y/n)", self.tr("browse.delete"), name);
+    }
+
+    fn delete_selected(&mut self) {
+        self.browse.confirm_delete = false;
+        let actual = match self.filtered().get(self.browse.selected).copied() {
+            Some(i) => i,
+            None => {
+                self.status = self.tr("status.browse").to_string();
+                return;
+            }
+        };
+        match remove_lock_from_file(&self.file, actual) {
+            Ok(name) => {
+                self.locks = load_locks(&self.file);
+                self.clamp_browse_selection();
+                self.status = format!("{} \"{}\"", self.tr("browse.deleted"), name);
+            }
+            Err(e) => self.status = e,
         }
     }
 
@@ -983,6 +1025,42 @@ mod tests {
             println!("\n--- step idx = {} ---", at);
             println!("{}", terminal.backend());
         }
+    }
+
+    fn key(c: char) -> KeyEvent {
+        KeyEvent::new(KeyCode::Char(c), KeyModifiers::NONE)
+    }
+
+    // Pressing 'd' then 'y' in Browse removes the selected lock from the file.
+    #[test]
+    fn delete_flow_removes_lock_from_file() {
+        use std::fs;
+        let src = fs::read_to_string("history-of-locks.md").unwrap();
+        let path = std::env::temp_dir().join("nlsmith-delete-flow-test.md");
+        let path = path.to_str().unwrap().to_string();
+        fs::write(&path, &src).unwrap();
+
+        let mut app = App::new(&path);
+        let before = app.locks.len();
+        assert!(before >= 2);
+        app.confirm_language(); // -> Browse
+        app.browse.selected = before - 1; // last lock
+
+        app.on_key(key('d')); // request delete
+        assert!(app.browse.confirm_delete);
+        assert!(app.status.contains("Delete"));
+
+        app.on_key(key('n')); // cancel — nothing removed
+        assert!(!app.browse.confirm_delete);
+        assert_eq!(app.locks.len(), before);
+
+        app.on_key(key('d'));
+        app.on_key(key('y')); // confirm
+        assert!(!app.browse.confirm_delete);
+        assert_eq!(app.locks.len(), before - 1);
+        assert_eq!(parse_history(&fs::read_to_string(&path).unwrap()).len(), before - 1);
+
+        fs::remove_file(&path).ok();
     }
 
     // The language picker renders, and selecting Polski switches the catalog.

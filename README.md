@@ -14,7 +14,8 @@ Run `locks` with no arguments to open the terminal UI (built with
 [ratatui](https://ratatui.rs/)). On startup it asks for a language (**English / Polski**), then
 gives you three views:
 
-- **Browse** — a filterable list of your solved locks with a detail pane.
+- **Browse** — a filterable list of your solved locks with a detail pane; `d` deletes the
+  selected lock (with a y/n confirm).
 - **Solve** — an in-place form (6 rules + start) that runs the solver and shows the result.
 - **Step** — walk a solution one click at a time. The plates render as a receding stack with
   tumbler 1 in the foreground, and animate the way the game does: the **plate slides while the
@@ -108,6 +109,7 @@ The solution is a grouped key sequence to type in-game:
 | `locks find <query>` | Search lock names (case-insensitive). |
 | `locks template` | Print a ready-to-fill input file for `solve`. |
 | `locks solve <input\|->` | Solve a lock from a file (or stdin via `-`). |
+| `locks remove <index\|substring>` | Delete a lock from the history (alias: `rm`). |
 | `locks help` | Show full help. |
 
 **Options:** `--save "<name>"` appends a solved lock to the history;

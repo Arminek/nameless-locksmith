@@ -1,0 +1,45 @@
+# nameless-locksmith UI strings — Українська (Ukrainian).
+# Format: `key = value`. See src/i18n/en.txt for the full guide.
+
+tab.browse = Огляд
+tab.solve  = Розв'язати
+tab.step   = Крок
+
+status.browse = Огляд — ↑↓ рух · / фільтр · Enter показати · Tab розв'язати · q вихід
+status.solve  = Розв'язання — Tab/↑↓ поля · Enter розв'язати · ^W показати · ^S зберегти · Esc назад
+status.step   = Крок — →/Space далі · ← назад · g скидання · G кінець · Esc назад
+status.filter = Фільтр — вводьте для пошуку · Enter застосувати · Esc очистити
+
+filter.title       = Фільтр
+filter.placeholder = / для фільтра
+locks.title        = Замки
+detail.title       = Деталі
+detail.empty       = Немає відповідних замків.
+
+label.rules    = Правила
+label.solution = Розв'язання
+label.steps    = кроків
+value.none     = (немає)
+value.unnamed  = без назви
+msg.cantwalk   = Неможливо показати
+msg.saved      = Збережено
+
+solve.title          = Розв'язати замок
+field.name           = Назва
+field.rule           = Правило
+solve.hint           = r = пластина праворуч, l = пластина ліворуч, - = нічого. Старт = 6 позицій 1..7.
+result.title         = Результат
+result.empty         = Заповніть форму та натисніть Enter.
+solve.err_start      = Старту потрібно 6 чисел, напр. 5, 3, 6, 7, 2, 7
+solve.err_nosolution = Немає розв'язання без удару об стіну — перевірте правила/старт.
+solve.solved_prefix  = Розв'язано за
+solve.solved_suffix  = кліків — ^W показати, ^S зберегти
+result.solved_suffix = кліків  ·  ^W показати  ·  ^S зберегти
+solve.nothing_walk   = Нічого показувати — спершу натисніть Enter
+solve.nothing_save   = Нічого зберігати — спершу натисніть Enter
+
+step.lock  = Замок
+step.steps = Кроки
+step.open  = ✓ ВІДКРИТО — усі штифти на отворі 4
+step.click = клік
+step.pins  = штифтів на 4

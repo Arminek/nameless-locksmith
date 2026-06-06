@@ -1,0 +1,45 @@
+# nameless-locksmith UI strings — Русский (Russian).
+# Format: `key = value`. See src/i18n/en.txt for the full guide.
+
+tab.browse = Обзор
+tab.solve  = Решить
+tab.step   = Шаг
+
+status.browse = Обзор — ↑↓ перемещение · / фильтр · Enter показать · Tab решить · q выход
+status.solve  = Решение — Tab/↑↓ поля · Enter решить · ^W показать · ^S сохранить · Esc назад
+status.step   = Шаг — →/Space далее · ← назад · g сброс · G конец · Esc назад
+status.filter = Фильтр — вводите для поиска · Enter применить · Esc очистить
+
+filter.title       = Фильтр
+filter.placeholder = / для фильтра
+locks.title        = Замки
+detail.title       = Детали
+detail.empty       = Нет подходящих замков.
+
+label.rules    = Правила
+label.solution = Решение
+label.steps    = шагов
+value.none     = (нет)
+value.unnamed  = без имени
+msg.cantwalk   = Невозможно показать
+msg.saved      = Сохранено
+
+solve.title          = Решить замок
+field.name           = Имя
+field.rule           = Правило
+solve.hint           = r = пластина вправо, l = пластина влево, - = ничего. Старт = 6 позиций 1..7.
+result.title         = Результат
+result.empty         = Заполните форму и нажмите Enter.
+solve.err_start      = Старту нужно 6 чисел, напр. 5, 3, 6, 7, 2, 7
+solve.err_nosolution = Нет решения без удара о стену — проверьте правила/старт.
+solve.solved_prefix  = Решено за
+solve.solved_suffix  = кликов — ^W показать, ^S сохранить
+result.solved_suffix = кликов  ·  ^W показать  ·  ^S сохранить
+solve.nothing_walk   = Нечего показывать — сначала нажмите Enter
+solve.nothing_save   = Нечего сохранять — сначала нажмите Enter
+
+step.lock  = Замок
+step.steps = Шаги
+step.open  = ✓ ОТКРЫТО — все штифты на отверстии 4
+step.click = клик
+step.pins  = штифтов на 4

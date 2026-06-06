@@ -1,0 +1,45 @@
+# nameless-locksmith UI strings — Español (Spanish).
+# Format: `key = value`. See src/i18n/en.txt for the full guide.
+
+tab.browse = Explorar
+tab.solve  = Resolver
+tab.step   = Paso
+
+status.browse = Explorar — ↑↓ mover · / filtrar · Enter reproducir · Tab resolver · q salir
+status.solve  = Resolver — Tab/↑↓ campos · Enter resolver · ^W reproducir · ^S guardar · Esc volver
+status.step   = Paso — →/Space siguiente · ← anterior · g reiniciar · G fin · Esc volver
+status.filter = Filtro — escribe para buscar · Enter aplicar · Esc borrar
+
+filter.title       = Filtro
+filter.placeholder = / para filtrar
+locks.title        = Cerraduras
+detail.title       = Detalle
+detail.empty       = Ninguna cerradura coincide.
+
+label.rules    = Reglas
+label.solution = Solución
+label.steps    = pasos
+value.none     = (ninguno)
+value.unnamed  = sin nombre
+msg.cantwalk   = No se puede reproducir
+msg.saved      = Guardado
+
+solve.title          = Resolver una cerradura
+field.name           = Nombre
+field.rule           = Regla
+solve.hint           = r = placa derecha, l = placa izquierda, - = nada. Inicio = 6 posiciones 1..7.
+result.title         = Resultado
+result.empty         = Rellena el formulario y pulsa Enter.
+solve.err_start      = El inicio necesita 6 números, p. ej. 5, 3, 6, 7, 2, 7
+solve.err_nosolution = Sin solución sin tocar una pared — revisa las reglas/inicio.
+solve.solved_prefix  = Resuelto en
+solve.solved_suffix  = clics — ^W reproducir, ^S guardar
+result.solved_suffix = clics  ·  ^W reproducir  ·  ^S guardar
+solve.nothing_walk   = Nada que reproducir — pulsa Enter para resolver
+solve.nothing_save   = Nada que guardar — pulsa Enter para resolver
+
+step.lock  = Cerradura
+step.steps = Pasos
+step.open  = ✓ ABIERTA — todos los pasadores centrados en el orificio 4
+step.click = clic
+step.pins  = pasadores en 4

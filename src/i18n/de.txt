@@ -1,0 +1,45 @@
+# nameless-locksmith UI strings — Deutsch (German).
+# Format: `key = value`. See src/i18n/en.txt for the full guide.
+
+tab.browse = Durchsuchen
+tab.solve  = Lösen
+tab.step   = Schritt
+
+status.browse = Durchsuchen — ↑↓ bewegen · / filtern · Enter abspielen · Tab lösen · q beenden
+status.solve  = Lösen — Tab/↑↓ Felder · Enter lösen · ^W abspielen · ^S speichern · Esc zurück
+status.step   = Schritt — →/Space weiter · ← zurück · g Reset · G Ende · Esc zurück
+status.filter = Filter — tippen zum Filtern · Enter übernehmen · Esc löschen
+
+filter.title       = Filter
+filter.placeholder = / zum Filtern
+locks.title        = Schlösser
+detail.title       = Details
+detail.empty       = Keine passenden Schlösser.
+
+label.rules    = Regeln
+label.solution = Lösung
+label.steps    = Schritte
+value.none     = (keine)
+value.unnamed  = ohne Namen
+msg.cantwalk   = Kann nicht abspielen
+msg.saved      = Gespeichert
+
+solve.title          = Schloss lösen
+field.name           = Name
+field.rule           = Regel
+solve.hint           = r = Platte rechts, l = Platte links, - = nichts. Start = 6 Positionen 1..7.
+result.title         = Ergebnis
+result.empty         = Formular ausfüllen, dann Enter drücken.
+solve.err_start      = Start braucht 6 Zahlen, z. B. 5, 3, 6, 7, 2, 7
+solve.err_nosolution = Keine Lösung ohne Wandberührung — Regeln/Start prüfen.
+solve.solved_prefix  = Gelöst in
+solve.solved_suffix  = Klicks — ^W abspielen, ^S speichern
+result.solved_suffix = Klicks  ·  ^W abspielen  ·  ^S speichern
+solve.nothing_walk   = Nichts abzuspielen — zuerst Enter zum Lösen
+solve.nothing_save   = Nichts zu speichern — zuerst Enter zum Lösen
+
+step.lock  = Schloss
+step.steps = Schritte
+step.open  = ✓ OFFEN — alle Stifte auf Loch 4 zentriert
+step.click = Klick
+step.pins  = Stifte auf 4

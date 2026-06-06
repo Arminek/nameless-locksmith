@@ -1,0 +1,45 @@
+# nameless-locksmith UI strings — Français (French).
+# Format: `key = value`. See src/i18n/en.txt for the full guide.
+
+tab.browse = Parcourir
+tab.solve  = Résoudre
+tab.step   = Étape
+
+status.browse = Parcourir — ↑↓ déplacer · / filtrer · Enter lire · Tab résoudre · q quitter
+status.solve  = Résoudre — Tab/↑↓ champs · Enter résoudre · ^W lire · ^S enregistrer · Esc retour
+status.step   = Étape — →/Space suivant · ← précédent · g réinit · G fin · Esc retour
+status.filter = Filtre — tapez pour filtrer · Enter appliquer · Esc effacer
+
+filter.title       = Filtre
+filter.placeholder = / pour filtrer
+locks.title        = Serrures
+detail.title       = Détail
+detail.empty       = Aucune serrure ne correspond.
+
+label.rules    = Règles
+label.solution = Solution
+label.steps    = étapes
+value.none     = (aucun)
+value.unnamed  = sans nom
+msg.cantwalk   = Lecture impossible
+msg.saved      = Enregistré
+
+solve.title          = Résoudre une serrure
+field.name           = Nom
+field.rule           = Règle
+solve.hint           = r = plaque à droite, l = plaque à gauche, - = rien. Départ = 6 positions 1..7.
+result.title         = Résultat
+result.empty         = Remplissez le formulaire puis appuyez sur Entrée.
+solve.err_start      = Le départ requiert 6 nombres, p. ex. 5, 3, 6, 7, 2, 7
+solve.err_nosolution = Pas de solution sans toucher un mur — revérifiez règles/départ.
+solve.solved_prefix  = Résolu en
+solve.solved_suffix  = clics — ^W lire, ^S enregistrer
+result.solved_suffix = clics  ·  ^W lire  ·  ^S enregistrer
+solve.nothing_walk   = Rien à lire — appuyez sur Entrée pour résoudre
+solve.nothing_save   = Rien à enregistrer — appuyez sur Entrée pour résoudre
+
+step.lock  = Serrure
+step.steps = Étapes
+step.open  = ✓ OUVERTE — toutes les goupilles centrées sur le trou 4
+step.click = clic
+step.pins  = goupilles sur 4

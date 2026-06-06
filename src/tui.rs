@@ -44,6 +44,12 @@ pub fn run(file: &str) -> io::Result<()> {
 const LANGUAGES: &[(&str, &str, &str)] = &[
     ("en", "English", include_str!("i18n/en.txt")),
     ("pl", "Polski", include_str!("i18n/pl.txt")),
+    ("de", "Deutsch", include_str!("i18n/de.txt")),
+    ("ru", "Русский", include_str!("i18n/ru.txt")),
+    ("uk", "Українська", include_str!("i18n/uk.txt")),
+    ("es", "Español", include_str!("i18n/es.txt")),
+    ("pt", "Português", include_str!("i18n/pt.txt")),
+    ("fr", "Français", include_str!("i18n/fr.txt")),
 ];
 
 fn parse_catalog(src: &'static str) -> HashMap<&'static str, &'static str> {
@@ -985,6 +991,7 @@ mod tests {
         let mut app = App::new("history-of-locks.md");
         let mut terminal = Terminal::new(TestBackend::new(80, 22)).unwrap();
         terminal.draw(|f| app.draw(f)).unwrap();
+        println!("{}", terminal.backend());
 
         app.lang_sel = 1;
         app.confirm_language();

@@ -1151,6 +1151,28 @@ mod tests {
         fs::remove_file(&path).ok();
     }
 
+    // Render Browse and Solve for eyeballing (and as draw-path guards):
+    //   cargo test render_screens -- --nocapture
+    #[test]
+    fn render_screens() {
+        let mut app = App::new("history-of-locks.md");
+        app.confirm_language();
+        let mut terminal = Terminal::new(TestBackend::new(80, 22)).unwrap();
+
+        app.screen = Screen::Browse;
+        app.browse.selected = 4;
+        terminal.draw(|f| app.draw(f)).unwrap();
+        println!("\n--- Browse ---\n{}", terminal.backend());
+
+        app.screen = Screen::Solve;
+        app.solve.name = "Vault behind the inn".into();
+        app.solve.rules = ["3r, 6l", "-", "1r, 4l, 6r", "2r, 5r, 6l", "-", "3l"].map(String::from);
+        app.solve.start = "5, 3, 6, 7, 2, 7".into();
+        app.run_solve();
+        terminal.draw(|f| app.draw(f)).unwrap();
+        println!("\n--- Solve ---\n{}", terminal.backend());
+    }
+
     // The language picker renders, and selecting Polski switches the catalog.
     #[test]
     fn language_pick_switches_catalog() {

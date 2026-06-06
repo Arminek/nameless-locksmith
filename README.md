@@ -16,26 +16,77 @@ Run `locks` with no arguments to open the terminal UI (built with
 
 - **Browse** — a filterable list of your solved locks with a detail pane. `d` deletes the
   selected lock (with a y/n confirm).
-- **Solve** — an in-place form (6 rules + start) that runs the solver and shows the result.
+- **Solve** — an in-place form (6 rules + start) that runs the solver and shows the result;
+  `^W` walks it, `^S` saves it to the history.
 - **Step** — walk a solution one click at a time. The six plates are stacked and **aligned**, so
   any tumblers at the same position line up; the plate slides while the pin stays put (as in the
   game), each pin turning green as it seats on hole 4. The lock is open when all six form one
-  vertical column at the centre. A big panel shows the current move and the steps scroll alongside:
-
-```
-            ▼  4                       ┌ Current move (9/31) ──────┐
- align every pin on hole 4             │        █▀█ ▄█  █▀▖        │
-  6         ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏ 2        │         ▀█  █  █ █        │
-  5           ▕ ◉ ○ ○ ◌ ○ ○ ○ 1        │        █▄█ ▄█▄ █▄▘        │
-  4         ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏ 2        │           D  →           │
-▶ 3       ▕ ○ ○ ◉ ◌ ○ ○ ○ ▏   3        └───────────────────────────┘
-  2     ▕ ○ ○ ○ ◉ ○ ○ ○ ▏     ✓        ┌ Steps (9/31) ─────────────┐
-  1           ▕ ◉ ○ ○ ◌ ○ ○ ○ 1        │ ✓ 1   1× A                │
-                                       │ ▶ 3   1× D                │
- click 8 / 35   · 1/6 pins on 4        │   5   1× A   …            │
-```
+  vertical column at the centre. A big panel shows the current move and the steps scroll alongside.
 
 All the `locks <subcommand>` commands below still work unchanged.
+
+### Screens
+
+**Browse** — filter the history (left), inspect rules/start/solution (right):
+
+```
+ nameless-locksmith    Browse   Solve   Step
+┌Filter──────────────────────────┐┌Detail──────────────────────────────────────┐
+│/ to filter                     ││Second chest in the tower                   │
+└────────────────────────────────┘│                                            │
+┌Locks (5)───────────────────────┐│Rules                                       │
+│  [✓] Chest above Cavalorn's cot ││  1: 3r, 6l                                 │
+│  [✓] Cave near Cavalorn's cotta ││  2: -                                      │
+│  [✓] Door to tower near Cavalor ││  3: 1r, 4l, 6r                             │
+│  [✓] First chest in the tower   ││  4: 2r, 5r, 6l                             │
+│▶ [✓] Second chest in the tower  ││  5: -        6: 3l                         │
+│                                 ││Start  [5, 3, 6, 7, 2, 7]                   │
+│                                 ││Solution (47 steps)                         │
+│                                 ││  1: 1x A   2: 4x A   4: 1x D   ⋮           │
+└────────────────────────────────┘└────────────────────────────────────────────┘
+Browse — ↑↓ move · / filter · Enter walk · d delete · Tab solve · q quit
+```
+
+**Solve** — type in the 6 rules + start, press Enter; the shortest wall-safe sequence appears:
+
+```
+ nameless-locksmith    Browse   Solve   Step
+┌Solve a lock──────────────────────────────────────────────────────────────────┐
+│ Name      Vault behind the inn▏                                               │
+│ Rule 1    3r, 6l                                                              │
+│ Rule 2    -                                                                   │
+│ Rule 3    1r, 4l, 6r                                                          │
+│ Rule 4    2r, 5r, 6l                                                          │
+│ Rule 5    -                                                                   │
+│ Rule 6    3l                                                                  │
+│ Start     5, 3, 6, 7, 2, 7                                                    │
+└───────────────────────────────────────────────────────────────────────────────┘
+┌Result─────────────────────────────────────────────────────────────────────────┐
+│✓ 52 clicks  ·  ^W walk  ·  ^S save                                            │
+│  1: 1x A   2: 4x A   4: 1x D   ⋮                                              │
+└───────────────────────────────────────────────────────────────────────────────┘
+Solved in 52 clicks — ^W walk, ^S save
+```
+
+**Step** — aligned plates with the pin fixed at the centre column (`▼ 4`), a big current-move
+panel, and the scrolling checklist (`✓` done · `▶` current):
+
+```
+ nameless-locksmith    Browse   Solve   Step
+┌Lock — Chest above Cavalorn's cottage ──────┐┌Current move (9/31)─────────────┐
+│                ▼  4                        ││      █▀█     ▄█      █▀▖        │
+│ align every pin on hole 4                  ││        ▀█      █  ▙▟ █ █        │
+│  6         ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏ 2             ││       █▄█     ▄█▄ ▛▜ █▄▘        │
+│  5           ▕ ◉ ○ ○ ◌ ○ ○ ○ 1             ││              D  →               │
+│  4         ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏ 2             │└────────────────────────────────┘
+│▶ 3       ▕ ○ ○ ◉ ◌ ○ ○ ○ ▏   3             │┌Steps (9/31)────────────────────┐
+│  2     ▕ ○ ○ ○ ◉ ○ ○ ○ ▏     ✓             ││✓ 3   1× D                      │
+│  1           ▕ ◉ ○ ○ ◌ ○ ○ ○ 1             ││✓ 5   1× A   ⋮                  │
+│                                            ││▶ 3   1× D                      │
+│click 8 / 35   · 1/6 pins on 4              ││  5   1× A                      │
+└────────────────────────────────────────────┘└────────────────────────────────┘
+Step — →/Space next · ← prev · g reset · G end · Esc back
+```
 
 Adding a UI language is just dropping a `key = value` file in [`src/i18n/`](src/i18n/) and
 registering one row in `LANGUAGES` (see [`src/i18n/en.txt`](src/i18n/en.txt)); missing keys fall

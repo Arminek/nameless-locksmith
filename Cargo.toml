@@ -1,6 +1,6 @@
 [package]
 name = "nameless-locksmith"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 description = "Solver and history manager for the lockpicking minigame in Gothic Remake"
 license = "MIT"

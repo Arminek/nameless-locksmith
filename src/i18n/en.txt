@@ -46,6 +46,7 @@ solve.solved_suffix  = clicks — ^W walk, ^S save
 result.solved_suffix = clicks  ·  ^W walk  ·  ^S save
 solve.nothing_walk   = Nothing to walk — press Enter to solve first
 solve.nothing_save   = Nothing to save — press Enter to solve first
+solve.cracking      = cracking the lock
 
 step.lock    = Lock
 step.steps   = Steps

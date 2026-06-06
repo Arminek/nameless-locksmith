@@ -39,6 +39,7 @@ solve.solved_suffix  = clics — ^W lire, ^S enregistrer
 result.solved_suffix = clics  ·  ^W lire  ·  ^S enregistrer
 solve.nothing_walk   = Rien à lire — appuyez sur Entrée pour résoudre
 solve.nothing_save   = Rien à enregistrer — appuyez sur Entrée pour résoudre
+solve.cracking      = crochetage de la serrure
 
 step.lock    = Serrure
 step.steps   = Étapes

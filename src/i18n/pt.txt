@@ -39,6 +39,7 @@ solve.solved_suffix  = cliques — ^W reproduzir, ^S guardar
 result.solved_suffix = cliques  ·  ^W reproduzir  ·  ^S guardar
 solve.nothing_walk   = Nada para reproduzir — pressione Enter para resolver
 solve.nothing_save   = Nada para guardar — pressione Enter para resolver
+solve.cracking      = a forçar a fechadura
 
 step.lock    = Fechadura
 step.steps   = Passos

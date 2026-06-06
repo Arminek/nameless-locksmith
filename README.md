@@ -17,7 +17,9 @@ Run `locks` with no arguments to open the terminal UI (built with
 - **Browse** — a filterable list of your solved locks with a detail pane. `d` deletes the
   selected lock (with a y/n confirm).
 - **Solve** — an in-place form (6 rules + start) that runs the solver and shows the result;
-  `^W` walks it, `^S` saves it to the history.
+  `^W` walks it, `^S` saves it to the history. On a successful solve the lock plays a short
+  "cracking" animation — the plates spin and settle onto hole 4 one by one — before the steps
+  appear (press any key to skip).
 - **Step** — walk a solution one click at a time. The six plates are stacked and **aligned**, so
   any tumblers at the same position line up; the plate slides while the pin stays put (as in the
   game), each pin turning green as it seats on hole 4. The lock is open when all six form one
@@ -67,6 +69,21 @@ Browse — ↑↓ move · / filter · Enter walk · d delete · Tab solve · q q
 │  1: 1x A   2: 4x A   4: 1x D   ⋮                                              │
 └───────────────────────────────────────────────────────────────────────────────┘
 Solved in 52 clicks — ^W walk, ^S save
+```
+
+On solve, the result area first plays a short "cracking" reel — the plates spin and then settle
+onto hole 4 one at a time, mid-cascade here (`✓` settled, `▶` still spinning):
+
+```
+┌Result─────────────────────────────────────────────────────────────────────────┐
+│▶ 6         ▕ ○ ○ ◉ ◌ ○ ○ ○ ▏     3                                            │
+│▶ 5             ▕ ◉ ○ ○ ◌ ○ ○ ○ ▏ 1                                            │
+│▶ 4   ▕ ○ ○ ○ ◌ ○ ◉ ○ ▏           6                                            │
+│  3       ▕ ○ ○ ○ ◉ ○ ○ ○ ▏       ✓                                            │
+│  2       ▕ ○ ○ ○ ◉ ○ ○ ○ ▏       ✓                                            │
+│  1       ▕ ○ ○ ○ ◉ ○ ○ ○ ▏       ✓                                            │
+│cracking the lock …                                                            │
+└───────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Step** — aligned plates with the pin fixed at the centre column (`▼ 4`), a big current-move

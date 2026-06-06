@@ -39,6 +39,7 @@ solve.solved_suffix  = Klicks — ^W abspielen, ^S speichern
 result.solved_suffix = Klicks  ·  ^W abspielen  ·  ^S speichern
 solve.nothing_walk   = Nichts abzuspielen — zuerst Enter zum Lösen
 solve.nothing_save   = Nichts zu speichern — zuerst Enter zum Lösen
+solve.cracking      = Schloss wird geknackt
 
 step.lock    = Schloss
 step.steps   = Schritte

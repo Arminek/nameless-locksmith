@@ -12,6 +12,7 @@
 
 use std::collections::HashMap;
 use std::io;
+use std::time::Duration;
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::{
@@ -111,8 +112,30 @@ struct App {
     step: Option<StepState>,
     step_list: ListState, // scroll state for the Steps pane
     step_origin: Screen,
+    solve_anim: Option<u32>, // frame counter for the "cracking" animation after a solve
     status: String,
     quit: bool,
+}
+
+// Cracking-animation timing, in frames (~45 ms each).
+const ANIM_SPIN: u32 = 7; // initial all-spin frames before plates start settling
+const ANIM_LOCK_STEP: u32 = 3; // frames between each tumbler locking onto hole 4
+const ANIM_HOLD: u32 = 7; // frames to hold the open lock before revealing the steps
+const ANIM_END: u32 = ANIM_SPIN + 6 * ANIM_LOCK_STEP + ANIM_HOLD;
+
+// Plate positions mid-animation: each tumbler spins through positions, then
+// snaps to hole 4 in a cascade (tumbler 1 first), like a settling combination.
+fn anim_positions(frame: u32) -> [i32; 6] {
+    let mut p = [0i32; 6];
+    for (t, slot) in p.iter_mut().enumerate() {
+        let lock_at = ANIM_SPIN + t as u32 * ANIM_LOCK_STEP;
+        *slot = if frame >= lock_at {
+            4
+        } else {
+            ((frame + t as u32 * 2) % 7) as i32 + 1 // spinning reel
+        };
+    }
+    p
 }
 
 struct BrowseState {
@@ -234,6 +257,7 @@ impl App {
             step: None,
             step_list: ListState::default(),
             step_origin: Screen::Browse,
+            solve_anim: None,
             status: String::new(),
             quit: false,
         }
@@ -242,13 +266,31 @@ impl App {
     fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
         while !self.quit {
             terminal.draw(|f| self.draw(f))?;
-            if let Event::Key(key) = event::read()? {
+            if self.solve_anim.is_some() {
+                // Animating: redraw on a timer, but still react to keys instantly.
+                if event::poll(Duration::from_millis(45))? {
+                    if let Event::Key(key) = event::read()? {
+                        if key.kind == KeyEventKind::Press {
+                            self.on_key(key);
+                        }
+                    }
+                } else {
+                    self.tick_anim();
+                }
+            } else if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     self.on_key(key);
                 }
             }
         }
         Ok(())
+    }
+
+    fn tick_anim(&mut self) {
+        self.solve_anim = match self.solve_anim {
+            Some(f) if f < ANIM_END => Some(f + 1),
+            _ => None,
+        };
     }
 
     // Shorthand for a localized string by key.
@@ -420,6 +462,10 @@ impl App {
     }
 
     fn on_key_solve(&mut self, key: KeyEvent) {
+        if self.solve_anim.is_some() {
+            self.solve_anim = None; // any key skips the cracking animation
+            return;
+        }
         let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
         match key.code {
             KeyCode::Esc => {
@@ -482,6 +528,7 @@ impl App {
                     start,
                     groups: sol.steps.clone(),
                 };
+                self.solve_anim = Some(0); // play the cracking animation
             }
         }
     }
@@ -722,6 +769,27 @@ impl App {
             Paragraph::new(lines).block(Block::bordered().title(solve_title)),
             form,
         );
+
+        // While the cracking animation plays, the result area shows the lock
+        // spinning its plates and settling onto hole 4 — then the steps appear.
+        if let Some(frame) = self.solve_anim {
+            let pos = anim_positions(frame);
+            let cracked = pos == GOAL;
+            let mut lines: Vec<Line> = Vec::new();
+            for t in (0..6).rev() {
+                lines.push(plate_line(t, pos[t], !cracked && pos[t] != 4));
+            }
+            lines.push(if cracked {
+                Line::from(self.tr("step.open").to_string().fg(Color::Green).bold())
+            } else {
+                Line::from(format!("{} …", self.tr("solve.cracking")).fg(Color::Yellow).bold())
+            });
+            f.render_widget(
+                Paragraph::new(lines).block(Block::bordered().title(self.tr("result.title").to_string())),
+                result,
+            );
+            return;
+        }
 
         let result_lines: Vec<Line> = match &self.solve.result {
             SolveResult::None => {
@@ -1162,6 +1230,29 @@ mod tests {
         app.run_solve();
         terminal.draw(|f| app.draw(f)).unwrap();
         println!("\n--- Solve ---\n{}", terminal.backend());
+    }
+
+    // The cracking animation spins then settles all plates onto hole 4.
+    //   cargo test render_solve_animation -- --nocapture
+    #[test]
+    fn render_solve_animation() {
+        assert_ne!(anim_positions(0), GOAL, "frame 0 should be mid-spin");
+        assert_eq!(anim_positions(ANIM_END), GOAL, "final frame should be solved");
+
+        let mut app = App::new("history-of-locks.md");
+        app.confirm_language();
+        app.screen = Screen::Solve;
+        app.solve.rules = ["3r, 6l", "-", "1r, 4l, 6r", "2r, 5r, 6l", "-", "3l"].map(String::from);
+        app.solve.start = "5, 3, 6, 7, 2, 7".into();
+        app.run_solve();
+        assert_eq!(app.solve_anim, Some(0)); // solving kicks off the animation
+
+        let mut terminal = Terminal::new(TestBackend::new(80, 22)).unwrap();
+        for &f in &[2u32, 13, ANIM_END] {
+            app.solve_anim = Some(f);
+            terminal.draw(|t| app.draw(t)).unwrap();
+            println!("\n--- anim frame {} ---\n{}", f, terminal.backend());
+        }
     }
 
     // The language picker renders, and selecting Polski switches the catalog.

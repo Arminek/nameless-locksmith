@@ -39,6 +39,7 @@ solve.solved_suffix  = кліків — ^W показати, ^S зберегти
 result.solved_suffix = кліків  ·  ^W показати  ·  ^S зберегти
 solve.nothing_walk   = Нічого показувати — спершу натисніть Enter
 solve.nothing_save   = Нічого зберігати — спершу натисніть Enter
+solve.cracking      = зламування замка
 
 step.lock    = Замок
 step.steps   = Кроки

@@ -39,6 +39,7 @@ solve.solved_suffix  = кликов — ^W показать, ^S сохранит
 result.solved_suffix = кликов  ·  ^W показать  ·  ^S сохранить
 solve.nothing_walk   = Нечего показывать — сначала нажмите Enter
 solve.nothing_save   = Нечего сохранять — сначала нажмите Enter
+solve.cracking      = взлом замка
 
 step.lock    = Замок
 step.steps   = Шаги

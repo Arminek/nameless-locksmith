@@ -39,6 +39,7 @@ solve.solved_suffix  = kliknięć — ^W podgląd, ^S zapisz
 result.solved_suffix = kliknięć  ·  ^W podgląd  ·  ^S zapisz
 solve.nothing_walk   = Nic do odtworzenia — najpierw naciśnij Enter
 solve.nothing_save   = Nic do zapisania — najpierw naciśnij Enter
+solve.cracking      = łamanie zamka
 
 step.lock    = Zamek
 step.steps   = Kroki

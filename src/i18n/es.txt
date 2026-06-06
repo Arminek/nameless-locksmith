@@ -40,8 +40,10 @@ result.solved_suffix = clics  ·  ^W reproducir  ·  ^S guardar
 solve.nothing_walk   = Nada que reproducir — pulsa Enter para resolver
 solve.nothing_save   = Nada que guardar — pulsa Enter para resolver
 
-step.lock  = Cerradura
-step.steps = Pasos
-step.open  = ✓ ABIERTA — todos los pasadores centrados en el orificio 4
-step.click = clic
-step.pins  = pasadores en 4
+step.lock    = Cerradura
+step.steps   = Pasos
+step.current = Movimiento actual
+step.goal    = alinea cada pasador en el orificio 4
+step.open    = ✓ ABIERTA — todos los pasadores centrados en el orificio 4
+step.click   = clic
+step.pins    = pasadores en 4

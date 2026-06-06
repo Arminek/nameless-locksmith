@@ -40,8 +40,10 @@ result.solved_suffix = kliknięć  ·  ^W podgląd  ·  ^S zapisz
 solve.nothing_walk   = Nic do odtworzenia — najpierw naciśnij Enter
 solve.nothing_save   = Nic do zapisania — najpierw naciśnij Enter
 
-step.lock  = Zamek
-step.steps = Kroki
-step.open  = ✓ OTWARTE — wszystkie piny na otworze 4
-step.click = klik
-step.pins  = pinów na 4
+step.lock    = Zamek
+step.steps   = Kroki
+step.current = Bieżący ruch
+step.goal    = ustaw każdy pin na otworze 4
+step.open    = ✓ OTWARTE — wszystkie piny na otworze 4
+step.click   = klik
+step.pins    = pinów na 4

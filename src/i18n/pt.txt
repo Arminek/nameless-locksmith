@@ -40,8 +40,10 @@ result.solved_suffix = cliques  ·  ^W reproduzir  ·  ^S guardar
 solve.nothing_walk   = Nada para reproduzir — pressione Enter para resolver
 solve.nothing_save   = Nada para guardar — pressione Enter para resolver
 
-step.lock  = Fechadura
-step.steps = Passos
-step.open  = ✓ ABERTA — todos os pinos centrados no furo 4
-step.click = clique
-step.pins  = pinos em 4
+step.lock    = Fechadura
+step.steps   = Passos
+step.current = Movimento atual
+step.goal    = alinhe cada pino no furo 4
+step.open    = ✓ ABERTA — todos os pinos centrados no furo 4
+step.click   = clique
+step.pins    = pinos em 4

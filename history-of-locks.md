@@ -50,8 +50,6 @@ original hand-entry started `5: 6x D`, which drove plate 5 from 1 below the wall
 6: 3x A
 ```
 
----
-
 ## Cave near Cavalorn's cottage
 
 **Rules:**
@@ -105,8 +103,6 @@ original hand-entry started `5: 6x D`, which drove plate 5 from 1 below the wall
 5: 1x D
 6: 3x A
 ```
-
----
 
 ## Door to tower near Cavalorn's cottage
 
@@ -170,8 +166,6 @@ original hand-entry started `5: 6x D`, which drove plate 5 from 1 below the wall
 6: 3x D
 ```
 
----
-
 ## First chest in the tower
 
 **Rules:**
@@ -199,8 +193,6 @@ original hand-entry started `5: 6x D`, which drove plate 5 from 1 below the wall
 1: 1x A
 4: 3x D
 ```
-
----
 
 ## Second chest in the tower
 
@@ -268,19 +260,3 @@ previous entry was 56 clicks and ended with plate 6 at 5 — pre-dated the tumbl
 5: 3x A
 6: 1x A
 ```
-
----
-
-## (unnamed lock)
-
-**Rules:**
-```
-1: -
-2: -
-3: -
-4: -
-5: -
-6: -
-```
-
-**Start:** `[ ]`

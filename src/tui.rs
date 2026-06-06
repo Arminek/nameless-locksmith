@@ -764,32 +764,65 @@ impl App {
             None => return,
         };
         let [left, right] =
-            Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)])
+            Layout::horizontal([Constraint::Percentage(58), Constraint::Percentage(42)])
                 .areas(area);
 
-        // ----- plate stack: tumbler 1 in the foreground, plates slide past a fixed pin -----
+        // ----- aligned plate stack (left) -----
         let target = cur.map(|g| groups[g].0); // tumbler of the next click ("selected" plate)
+        let solved = pos == GOAL && idx == nclicks;
         let mut track_lines: Vec<Line> = Vec::new();
-        track_lines.push(Line::from("            ╭──────╮".fg(Color::DarkGray)));
-        track_lines.push(Line::from("          ◜ ╰──────╯".fg(Color::DarkGray)));
+        // fixed centre guide: every pin sits in PIN_COL, the goal is hole 4 here
+        let mut pointer = vec![Span::raw(" ".repeat(PIN_COL)), "▼".fg(Color::Cyan).bold()];
+        pointer.push("  4".fg(Color::Cyan));
+        track_lines.push(Line::from(pointer));
+        track_lines.push(Line::from(format!(" {}", self.tr("step.goal")).fg(Color::DarkGray)));
         for t in (0..6).rev() {
-            track_lines.push(plate_line(t, pos[t], target == Some(t + 1)));
+            track_lines.push(plate_line(t, pos[t], !solved && target == Some(t + 1)));
         }
         track_lines.push(Line::from(""));
-        let progress = if pos == GOAL && idx == nclicks {
+        let centered = pos.iter().filter(|&&p| p == 4).count();
+        track_lines.push(if solved {
             Line::from(self.tr("step.open").to_string().fg(Color::Green).bold())
         } else {
-            let centered = pos.iter().filter(|&&p| p == 4).count();
             Line::from(vec![
                 format!("{} {} / {}   ", self.tr("step.click"), idx, nclicks).fg(Color::White),
                 format!("· {}/6 {}", centered, self.tr("step.pins")).fg(Color::DarkGray),
             ])
-        };
-        track_lines.push(progress);
+        });
         let lock_title = format!("{} — {}", self.tr("step.lock"), name);
         f.render_widget(
             Paragraph::new(track_lines).block(Block::bordered().title(lock_title)),
             left,
+        );
+
+        // ----- right column: big current-move panel over a scrolling step list -----
+        let [move_area, steps_area] =
+            Layout::vertical([Constraint::Length(7), Constraint::Fill(1)]).areas(right);
+
+        let move_lines: Vec<Line> = if solved {
+            let big = big_text("OPEN");
+            let mut v = vec![Line::from("")];
+            v.extend(big.into_iter().map(|r| Line::from(r.fg(Color::Green).bold())));
+            v
+        } else if let Some(g) = cur {
+            let (t, k, n) = groups[g];
+            let big = big_text(&format!("{} {}×{}", t, n, k));
+            let brass = Color::Rgb(255, 190, 70);
+            let mut v: Vec<Line> = big.into_iter().map(|r| Line::from(r.fg(brass).bold())).collect();
+            // direction arrows: one per press, D = plate right, A = plate left
+            let arrow = if k == 'D' { "→" } else { "←" };
+            let arrows = vec![arrow; n].join(" ");
+            v.push(Line::from(format!("{}  {}", k, arrows).fg(Color::White).bold()));
+            v
+        } else {
+            vec![]
+        };
+        let move_title = format!("{} ({}/{})", self.tr("step.current"), sel_index(cur, &groups) + 1, groups.len());
+        f.render_widget(
+            Paragraph::new(move_lines)
+                .centered()
+                .block(Block::bordered().title(move_title)),
+            move_area,
         );
 
         // ----- step list (scrolls to follow the current step) -----
@@ -797,31 +830,39 @@ impl App {
             .iter()
             .enumerate()
             .map(|(g, &(t, k, n))| {
-                let text = format!("{}: {}x {}", t, n, k);
-                let style = if Some(g) == cur {
-                    Style::new()
-                        .fg(Color::Black)
-                        .bg(Color::Yellow)
-                        .add_modifier(Modifier::BOLD)
+                let (mark, style) = if Some(g) == cur {
+                    (
+                        "▶ ",
+                        Style::new()
+                            .fg(Color::Black)
+                            .bg(Color::Yellow)
+                            .add_modifier(Modifier::BOLD),
+                    )
                 } else if cur.map(|c| g < c).unwrap_or(true) {
-                    Style::new().fg(Color::DarkGray) // already done
+                    ("✓ ", Style::new().fg(Color::DarkGray)) // already done
                 } else {
-                    Style::new().fg(Color::White)
+                    ("  ", Style::new().fg(Color::White))
                 };
-                ListItem::new(Line::from(text).style(style))
+                ListItem::new(Line::from(format!("{}{}   {}× {}", mark, t, n, k)).style(style))
             })
             .collect();
         // Follow the current step (or the last one when complete) so long
         // solutions scroll into view.
-        let sel = cur.unwrap_or(groups.len().saturating_sub(1));
+        let sel = sel_index(cur, &groups);
         self.step_list.select(Some(sel));
         let steps_title = format!("{} ({}/{})", self.tr("step.steps"), sel + 1, groups.len());
         let list = List::new(items).block(Block::bordered().title(steps_title));
-        f.render_stateful_widget(list, right, &mut self.step_list);
+        f.render_stateful_widget(list, steps_area, &mut self.step_list);
     }
 }
 
 // ---------- helpers ----------
+
+// The step index to highlight/scroll to: the current group, or the last one
+// when the walk is complete.
+fn sel_index(cur: Option<usize>, groups: &[(usize, char, usize)]) -> usize {
+    cur.unwrap_or(groups.len().saturating_sub(1))
+}
 
 fn load_locks(file: &str) -> Vec<Lock> {
     match std::fs::read_to_string(file) {
@@ -922,26 +963,35 @@ fn lock_detail_lines(l: &Lock, i18n: &I18n) -> Vec<Line<'static>> {
     out
 }
 
-// One tumbler plate. The PIN is fixed at the plate's centre column; the row of
-// holes (and the goal hole, position 4) slides past it as `p` changes — matching
-// the in-game animation where the plate moves and the pin stays put. Plates
-// further back (higher `t`) are indented to the right and shaded darker, so
-// tumbler 1 reads as the closest, foreground plate.
-fn plate_line(t: usize, p: i32, is_target: bool) -> Line<'static> {
-    const SLOTS: i32 = 13; // visible width of the sliding plate, in holes
-    const CENTER: i32 = 6; // the fixed pin column (slot index)
+// Column (0-based) where every plate's PIN sits, so the pins line up vertically
+// across all tumblers. = marker(2) + label(2) + CENTER slots * 2 chars each.
+const PIN_COL: usize = 2 + 2 + (PLATE_CENTER as usize) * 2;
+const PLATE_SLOTS: i32 = 13; // visible width of the sliding plate, in holes
+const PLATE_CENTER: i32 = 6; // the fixed pin column (slot index)
 
+// One tumbler plate. The PIN is fixed at a shared centre column (PIN_COL); the
+// row of holes (and the goal hole, position 4) slides past it as `p` changes —
+// matching the in-game animation where the plate moves and the pin stays put.
+// Plates are NOT staggered, so two tumblers at the same position render
+// identically and line up; a solved lock is one clean vertical column of pins on
+// hole 4. Depth is shown by shading alone: tumbler 1 (t=0) is brightest/front.
+fn plate_line(t: usize, p: i32, is_target: bool) -> Line<'static> {
     let depth = t as u8; // 0 = front/bright, 5 = back/dim
-    let shade = 235u8.saturating_sub(depth * 26);
+    let shade = 235u8.saturating_sub(depth * 20);
     let plate = Color::Rgb(shade, shade, shade);
     let hole = Color::Rgb(shade / 3, shade / 3, shade / 3);
     let brass = Color::Rgb(
-        220u8.saturating_sub(depth * 18),
-        150u8.saturating_sub(depth * 14),
-        60u8.saturating_sub(depth * 8),
+        225u8.saturating_sub(depth * 16),
+        155u8.saturating_sub(depth * 12),
+        65u8.saturating_sub(depth * 8),
     );
 
-    let mut spans: Vec<Span> = vec![Span::raw("  ".repeat(depth as usize))];
+    // marker column: the active plate gets a ▶ so it's easy to spot
+    let mut spans: Vec<Span> = vec![if is_target {
+        "▶ ".fg(Color::Yellow).bold()
+    } else {
+        "  ".into()
+    }];
     let label = format!("{} ", t + 1);
     spans.push(if is_target {
         label.fg(Color::Yellow).bold()
@@ -949,10 +999,9 @@ fn plate_line(t: usize, p: i32, is_target: bool) -> Line<'static> {
         label.fg(plate)
     });
 
-    for c in 0..SLOTS {
-        // which hole of the plate currently sits under slot `c`
-        let h = p + (c - CENTER);
-        let glyph = if c == CENTER {
+    for c in 0..PLATE_SLOTS {
+        let h = p + (c - PLATE_CENTER); // hole of the plate under slot `c`
+        let glyph = if c == PLATE_CENTER {
             // the fixed pin, sitting over hole `p`
             if p == 4 {
                 "◉".fg(Color::Green).bold()
@@ -962,7 +1011,7 @@ fn plate_line(t: usize, p: i32, is_target: bool) -> Line<'static> {
                 "◉".fg(brass).bold()
             }
         } else if h == 4 {
-            "◌".fg(Color::Rgb(70, 130, 130)) // the goal hole, sliding toward the pin
+            "◌".fg(Color::Rgb(90, 180, 180)) // the goal hole, sliding toward the pin
         } else if (1..=7).contains(&h) {
             "○".fg(hole)
         } else if h == 0 {
@@ -977,11 +1026,50 @@ fn plate_line(t: usize, p: i32, is_target: bool) -> Line<'static> {
     }
 
     if p == 4 {
-        spans.push(" ✓".fg(Color::Green).bold());
+        spans.push("✓".fg(Color::Green).bold());
     } else {
-        spans.push(format!(" {}", p).fg(plate));
+        spans.push(format!("{}", p).fg(plate));
     }
     Line::from(spans)
+}
+
+// ----- big block font, for the prominent "current move" panel -----
+
+// A 3-row block glyph for the small charset the move banner needs.
+fn big_glyph(c: char) -> [&'static str; 3] {
+    match c {
+        '0' => ["█▀█", "█ █", "█▄█"],
+        '1' => ["▄█ ", " █ ", "▄█▄"],
+        '2' => ["█▀█", " ▄▀", "█▄▄"],
+        '3' => ["█▀█", " ▀█", "█▄█"],
+        '4' => ["█ █", "█▄█", "  █"],
+        '5' => ["█▀▀", "▀▀█", "▀▀█"],
+        '6' => ["█▀▀", "█▀█", "█▄█"],
+        '7' => ["▀▀█", "  █", "  █"],
+        '8' => ["█▀█", "█▀█", "█▄█"],
+        '9' => ["█▀█", "█▄█", "▄▄█"],
+        'A' => ["█▀█", "█▀█", "█ █"],
+        'D' => ["█▀▖", "█ █", "█▄▘"],
+        'O' => ["█▀█", "█ █", "█▄█"],
+        'P' => ["█▀█", "█▀▘", "█  "],
+        'E' => ["█▀▀", "█▀▀", "█▄▄"],
+        'N' => ["█▖█", "█▝█", "█ █"],
+        '×' => ["   ", "▙▟", "▛▜"],
+        _ => ["   ", "   ", "   "], // space / unknown
+    }
+}
+
+// Render `s` as three rows of block text.
+fn big_text(s: &str) -> [String; 3] {
+    let mut rows = [String::new(), String::new(), String::new()];
+    for c in s.chars() {
+        let g = big_glyph(c);
+        for (r, row) in rows.iter_mut().enumerate() {
+            row.push_str(g[r]);
+            row.push(' ');
+        }
+    }
+    rows
 }
 
 #[cfg(test)]

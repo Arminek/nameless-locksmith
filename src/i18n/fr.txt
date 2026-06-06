@@ -40,8 +40,10 @@ result.solved_suffix = clics  ·  ^W lire  ·  ^S enregistrer
 solve.nothing_walk   = Rien à lire — appuyez sur Entrée pour résoudre
 solve.nothing_save   = Rien à enregistrer — appuyez sur Entrée pour résoudre
 
-step.lock  = Serrure
-step.steps = Étapes
-step.open  = ✓ OUVERTE — toutes les goupilles centrées sur le trou 4
-step.click = clic
-step.pins  = goupilles sur 4
+step.lock    = Serrure
+step.steps   = Étapes
+step.current = Coup actuel
+step.goal    = alignez chaque goupille sur le trou 4
+step.open    = ✓ OUVERTE — toutes les goupilles centrées sur le trou 4
+step.click   = clic
+step.pins    = goupilles sur 4

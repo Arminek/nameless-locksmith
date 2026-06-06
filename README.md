@@ -11,21 +11,35 @@ via breadth-first search over all 7⁶ plate states, and keeps a log of every lo
 ## Interactive TUI
 
 Run `locks` with no arguments to open the terminal UI (built with
-[ratatui](https://ratatui.rs/)). On startup it asks for a language (**English / Polski**), then
-gives you three views:
+[ratatui](https://ratatui.rs/)). On startup it asks for a language — **English, Polski, Deutsch,
+Русский, Українська, Español, Português, Français** — then gives you three views:
 
-- **Browse** — a filterable list of your solved locks with a detail pane; `d` deletes the
+- **Browse** — a filterable list of your solved locks with a detail pane. `d` deletes the
   selected lock (with a y/n confirm).
 - **Solve** — an in-place form (6 rules + start) that runs the solver and shows the result.
-- **Step** — walk a solution one click at a time. The plates render as a receding stack with
-  tumbler 1 in the foreground, and animate the way the game does: the **plate slides while the
-  pin stays put**, seating on hole 4 when centered.
+- **Step** — walk a solution one click at a time. The six plates are stacked and **aligned**, so
+  any tumblers at the same position line up; the plate slides while the pin stays put (as in the
+  game), each pin turning green as it seats on hole 4. The lock is open when all six form one
+  vertical column at the centre. A big panel shows the current move and the steps scroll alongside:
+
+```
+            ▼  4                       ┌ Current move (9/31) ──────┐
+ align every pin on hole 4             │        █▀█ ▄█  █▀▖        │
+  6         ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏ 2        │         ▀█  █  █ █        │
+  5           ▕ ◉ ○ ○ ◌ ○ ○ ○ 1        │        █▄█ ▄█▄ █▄▘        │
+  4         ▕ ○ ◉ ○ ◌ ○ ○ ○ ▏ 2        │           D  →           │
+▶ 3       ▕ ○ ○ ◉ ◌ ○ ○ ○ ▏   3        └───────────────────────────┘
+  2     ▕ ○ ○ ○ ◉ ○ ○ ○ ▏     ✓        ┌ Steps (9/31) ─────────────┐
+  1           ▕ ◉ ○ ○ ◌ ○ ○ ○ 1        │ ✓ 1   1× A                │
+                                       │ ▶ 3   1× D                │
+ click 8 / 35   · 1/6 pins on 4        │   5   1× A   …            │
+```
 
 All the `locks <subcommand>` commands below still work unchanged.
 
 Adding a UI language is just dropping a `key = value` file in [`src/i18n/`](src/i18n/) and
 registering one row in `LANGUAGES` (see [`src/i18n/en.txt`](src/i18n/en.txt)); missing keys fall
-back to English.
+back to English, and a test enforces that every catalog has the full key set.
 
 ## Install
 

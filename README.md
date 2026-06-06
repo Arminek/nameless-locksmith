@@ -1,7 +1,9 @@
 # nameless-locksmith
 
-A command-line **and terminal-UI** solver and history manager for the **lock-picking minigame
-in Gothic Remake**.
+A command-line, terminal-UI, **and web** solver and history manager for the **lock-picking
+minigame in Gothic Remake**.
+
+**▶ Try it in your browser: https://arminek.github.io/nameless-locksmith/**
 
 Each lock has 6 interconnected tumblers (plates) that slide along a 1–7 track. Moving one
 tumbler forces others to move, and no plate may ever fall below 1 or past 7. The goal is to
@@ -109,6 +111,16 @@ Step — →/Space next · ← prev · g reset · G end · Esc back
 Adding a UI language is just dropping a `key = value` file in [`src/i18n/`](src/i18n/) and
 registering one row in `LANGUAGES` (see [`src/i18n/en.txt`](src/i18n/en.txt)); missing keys fall
 back to English, and a test enforces that every catalog has the full key set.
+
+## Web app
+
+A static browser version lives in [`web/`](web/) and is published to GitHub Pages at
+**https://arminek.github.io/nameless-locksmith/**. It reuses the same lock history and
+translations (generated from `src/i18n/` + `history-of-locks.md` by `web/build-data.mjs`) and a
+faithful JavaScript port of the solver — `web/verify.mjs` checks it against the checked-in
+history (and produces the same optimal solutions as the Rust binary). The lock is drawn in SVG,
+so the plates slide smoothly and the "cracking" animation plays for real. No build step or server
+needed — it's plain HTML/CSS/ES-modules.
 
 ## Install
 

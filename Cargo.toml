@@ -1,0 +1,18 @@
+[package]
+name = "nameless-locksmith"
+version = "0.1.0"
+edition = "2021"
+description = "Solver and history manager for the lockpicking minigame in Gothic Remake"
+license = "MIT"
+repository = "https://github.com/Arminek/nameless-locksmith"
+
+# The command users actually type. Kept short and matches the in-app help/history.
+[[bin]]
+name = "locks"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
+panic = "abort"

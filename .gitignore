@@ -1,0 +1,15 @@
+# Rust build output
+/target
+
+# Stray local builds at repo root (we ship binaries via CI releases)
+/*.exe
+/*.pdb
+/locks
+/solve
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

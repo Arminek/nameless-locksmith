@@ -25,7 +25,7 @@ use ratatui::{
 
 use nameless_locksmith::{
     append_lock, build_matrix, parse_history, parse_solution_steps, remove_lock_from_file, solve,
-    Lock, Solution, GOAL,
+    Lock, Solution, MAX_TUMBLERS, MIN_TUMBLERS,
 };
 
 // ---------- public entry point ----------
@@ -121,21 +121,21 @@ struct App {
 const ANIM_SPIN: u32 = 7; // initial all-spin frames before plates start settling
 const ANIM_LOCK_STEP: u32 = 3; // frames between each tumbler locking onto hole 4
 const ANIM_HOLD: u32 = 7; // frames to hold the open lock before revealing the steps
-const ANIM_END: u32 = ANIM_SPIN + 6 * ANIM_LOCK_STEP + ANIM_HOLD;
+const ANIM_END: u32 = ANIM_SPIN + 8 * ANIM_LOCK_STEP + ANIM_HOLD;
 
 // Plate positions mid-animation: each tumbler spins through positions, then
 // snaps to hole 4 in a cascade (tumbler 1 first), like a settling combination.
-fn anim_positions(frame: u32) -> [i32; 6] {
-    let mut p = [0i32; 6];
-    for (t, slot) in p.iter_mut().enumerate() {
-        let lock_at = ANIM_SPIN + t as u32 * ANIM_LOCK_STEP;
-        *slot = if frame >= lock_at {
-            4
-        } else {
-            ((frame + t as u32 * 2) % 7) as i32 + 1 // spinning reel
-        };
-    }
-    p
+fn anim_positions(frame: u32, n: usize) -> Vec<i32> {
+    (0..n)
+        .map(|t| {
+            let lock_at = ANIM_SPIN + t as u32 * ANIM_LOCK_STEP;
+            if frame >= lock_at {
+                4
+            } else {
+                ((frame + t as u32 * 2) % 7) as i32 + 1 // spinning reel
+            }
+        })
+        .collect()
 }
 
 struct BrowseState {
@@ -147,11 +147,27 @@ struct BrowseState {
 }
 
 struct SolveState {
+    n: usize, // tumbler count (2..8)
     name: String,
-    rules: [String; 6],
+    rules: Vec<String>, // length n
     start: String,
-    focus: usize, // 0 = name, 1..=6 = rules, 7 = start
+    // focus fields: 0 = tumbler count, 1 = name, 2..=n+1 = rules, n+2 = start
+    focus: usize,
     result: SolveResult,
+}
+
+impl SolveState {
+    fn field_count(&self) -> usize {
+        self.n + 3
+    }
+    // Resize the rules to the tumbler count, keeping existing entries.
+    fn set_count(&mut self, n: usize) {
+        self.n = n.clamp(MIN_TUMBLERS, MAX_TUMBLERS);
+        self.rules.resize(self.n, String::new());
+        if self.focus >= self.field_count() {
+            self.focus = self.field_count() - 1;
+        }
+    }
 }
 
 enum SolveResult {
@@ -160,8 +176,8 @@ enum SolveResult {
     Solved {
         total: usize,
         lines: Vec<String>,
-        mat: [[i32; 6]; 6],
-        start: [i32; 6],
+        mat: Vec<Vec<i32>>,
+        start: Vec<i32>,
         groups: Vec<(usize, char, usize)>,
     },
 }
@@ -169,9 +185,9 @@ enum SolveResult {
 // A solution being walked one click at a time.
 struct StepState {
     name: String,
-    mat: [[i32; 6]; 6],
-    start: [i32; 6],
-    clicks: Vec<(usize, char)>,        // expanded per-click: (tumbler 1..6, key)
+    mat: Vec<Vec<i32>>,
+    start: Vec<i32>,
+    clicks: Vec<(usize, char)>,        // expanded per-click: (tumbler 1..n, key)
     groups: Vec<(usize, char, usize)>, // grouped 1-based, for display
     idx: usize,                        // clicks applied so far (0..=clicks.len())
 }
@@ -179,8 +195,8 @@ struct StepState {
 impl StepState {
     fn new(
         name: String,
-        mat: [[i32; 6]; 6],
-        start: [i32; 6],
+        mat: Vec<Vec<i32>>,
+        start: Vec<i32>,
         groups: Vec<(usize, char, usize)>,
     ) -> Self {
         let mut clicks = Vec::new();
@@ -200,11 +216,11 @@ impl StepState {
     }
 
     // Plate positions after applying the first `idx` clicks.
-    fn positions(&self) -> [i32; 6] {
-        let mut s = self.start;
+    fn positions(&self) -> Vec<i32> {
+        let mut s = self.start.clone();
         for &(t, k) in &self.clicks[..self.idx] {
             let sgn = if k == 'A' { -1 } else { 1 };
-            for i in 0..6 {
+            for i in 0..s.len() {
                 s[i] += sgn * self.mat[t - 1][i]; // tumblers are 1-based
             }
         }
@@ -248,10 +264,11 @@ impl App {
                 list_state,
             },
             solve: SolveState {
+                n: 6,
                 name: String::new(),
-                rules: Default::default(),
+                rules: vec![String::new(); 6],
                 start: String::new(),
-                focus: 0,
+                focus: 1, // start on the name field
                 result: SolveResult::None,
             },
             step: None,
@@ -467,6 +484,7 @@ impl App {
             return;
         }
         let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+        let fields = self.solve.field_count();
         match key.code {
             KeyCode::Esc => {
                 self.screen = Screen::Browse;
@@ -474,33 +492,50 @@ impl App {
             }
             KeyCode::Char('w') if ctrl => self.walk_solved(),
             KeyCode::Char('s') if ctrl => self.save_solved(),
-            KeyCode::Tab | KeyCode::Down => self.solve.focus = (self.solve.focus + 1) % 8,
-            KeyCode::BackTab | KeyCode::Up => self.solve.focus = (self.solve.focus + 7) % 8,
+            KeyCode::Tab | KeyCode::Down => self.solve.focus = (self.solve.focus + 1) % fields,
+            KeyCode::BackTab | KeyCode::Up => {
+                self.solve.focus = (self.solve.focus + fields - 1) % fields
+            }
+            // on the tumbler-count field, ←/→ adjust the count
+            KeyCode::Left if self.solve.focus == 0 => self.solve.set_count(self.solve.n - 1),
+            KeyCode::Right if self.solve.focus == 0 => self.solve.set_count(self.solve.n + 1),
             KeyCode::Enter => self.run_solve(),
             KeyCode::Backspace => {
-                self.solve_field_mut().pop();
+                if let Some(field) = self.solve_field_mut() {
+                    field.pop();
+                }
             }
-            KeyCode::Char(c) if !ctrl => self.solve_field_mut().push(c),
+            // digit on the count field sets the count directly
+            KeyCode::Char(c) if self.solve.focus == 0 && c.is_ascii_digit() => {
+                self.solve.set_count(c.to_digit(10).unwrap() as usize)
+            }
+            KeyCode::Char(c) if !ctrl => {
+                if let Some(field) = self.solve_field_mut() {
+                    field.push(c);
+                }
+            }
             _ => {}
         }
     }
 
-    fn solve_field_mut(&mut self) -> &mut String {
+    // The editable text field at the current focus, or None for the count field.
+    fn solve_field_mut(&mut self) -> Option<&mut String> {
+        let n = self.solve.n;
         match self.solve.focus {
-            0 => &mut self.solve.name,
-            f @ 1..=6 => &mut self.solve.rules[f - 1],
-            _ => &mut self.solve.start,
+            0 => None, // tumbler count (not a text field)
+            1 => Some(&mut self.solve.name),
+            f if f >= 2 && f <= n + 1 => Some(&mut self.solve.rules[f - 2]),
+            _ => Some(&mut self.solve.start),
         }
     }
 
     fn run_solve(&mut self) {
-        let start = match parse_start(&self.solve.start) {
-            Some(s) => s,
-            None => {
-                self.solve.result = SolveResult::Error(self.tr("solve.err_start").to_string());
-                return;
-            }
-        };
+        let start = parse_start(&self.solve.start);
+        if start.len() != self.solve.n {
+            self.solve.result =
+                SolveResult::Error(format!("{} ({})", self.tr("solve.err_count"), self.solve.n));
+            return;
+        }
         let mat = match build_matrix(&self.solve.rules) {
             Ok(m) => m,
             Err(e) => {
@@ -508,7 +543,7 @@ impl App {
                 return;
             }
         };
-        match solve(start, &mat) {
+        match solve(&start, &mat) {
             None => {
                 self.solve.result =
                     SolveResult::Error(self.tr("solve.err_nosolution").to_string());
@@ -543,7 +578,7 @@ impl App {
             } else {
                 self.solve.name.trim().to_string()
             };
-            self.step = Some(StepState::new(name, *mat, *start, groups.clone()));
+            self.step = Some(StepState::new(name, mat.clone(), start.clone(), groups.clone()));
             self.step_list = ListState::default();
             self.step_origin = Screen::Solve;
             self.screen = Screen::Step;
@@ -557,7 +592,7 @@ impl App {
         let (total, start, groups) = match &self.solve.result {
             SolveResult::Solved {
                 total, start, groups, ..
-            } => (*total, *start, groups.clone()),
+            } => (*total, start.clone(), groups.clone()),
             _ => {
                 self.status = self.tr("solve.nothing_save").to_string();
                 return;
@@ -572,7 +607,8 @@ impl App {
             total,
             steps: groups,
         };
-        match append_lock(&self.file, &name, &self.solve.rules, &start, &sol) {
+        let rules: Vec<String> = self.solve.rules[..self.solve.n].to_vec();
+        match append_lock(&self.file, &name, &rules, &start, &sol) {
             Ok(()) => {
                 self.status = format!("{} \"{}\" → {}", self.tr("msg.saved"), name, self.file);
                 self.locks = load_locks(&self.file); // refresh browse list
@@ -749,20 +785,25 @@ impl App {
     }
 
     fn draw_solve(&mut self, f: &mut Frame, area: Rect) {
+        let n = self.solve.n;
         let [form, result] =
-            Layout::vertical([Constraint::Length(11), Constraint::Fill(1)]).areas(area);
+            Layout::vertical([Constraint::Length((n + 5) as u16), Constraint::Fill(1)]).areas(area);
 
         let mut lines: Vec<Line> = Vec::new();
-        lines.push(field_line(self.tr("field.name"), &self.solve.name, self.solve.focus == 0));
-        for i in 0..6 {
+        lines.push(field_line(
+            self.tr("solve.tumblers"),
+            &format!("{}   ◄ ►", n),
+            self.solve.focus == 0,
+        ));
+        lines.push(field_line(self.tr("field.name"), &self.solve.name, self.solve.focus == 1));
+        for i in 0..n {
             lines.push(field_line(
                 &format!("{} {}", self.tr("field.rule"), i + 1),
                 &self.solve.rules[i],
-                self.solve.focus == i + 1,
+                self.solve.focus == i + 2,
             ));
         }
-        lines.push(field_line("Start", &self.solve.start, self.solve.focus == 7));
-        lines.push(Line::from(""));
+        lines.push(field_line("Start", &self.solve.start, self.solve.focus == n + 2));
         lines.push(Line::from(self.tr("solve.hint").to_string().fg(Color::DarkGray)));
         let solve_title = self.tr("solve.title").to_string();
         f.render_widget(
@@ -773,10 +814,10 @@ impl App {
         // While the cracking animation plays, the result area shows the lock
         // spinning its plates and settling onto hole 4 — then the steps appear.
         if let Some(frame) = self.solve_anim {
-            let pos = anim_positions(frame);
-            let cracked = pos == GOAL;
+            let pos = anim_positions(frame, n);
+            let cracked = pos.iter().all(|&p| p == 4);
             let mut lines: Vec<Line> = Vec::new();
-            for t in (0..6).rev() {
+            for t in (0..n).rev() {
                 lines.push(plate_line(t, pos[t], !cracked && pos[t] != 4));
             }
             lines.push(if cracked {
@@ -836,15 +877,16 @@ impl App {
                 .areas(area);
 
         // ----- aligned plate stack (left) -----
+        let n = pos.len();
         let target = cur.map(|g| groups[g].0); // tumbler of the next click ("selected" plate)
-        let solved = pos == GOAL && idx == nclicks;
+        let solved = pos.iter().all(|&p| p == 4) && idx == nclicks;
         let mut track_lines: Vec<Line> = Vec::new();
         // fixed centre guide: every pin sits in PIN_COL, the goal is hole 4 here
         let mut pointer = vec![Span::raw(" ".repeat(PIN_COL)), "▼".fg(Color::Cyan).bold()];
         pointer.push("  4".fg(Color::Cyan));
         track_lines.push(Line::from(pointer));
         track_lines.push(Line::from(format!(" {}", self.tr("step.goal")).fg(Color::DarkGray)));
-        for t in (0..6).rev() {
+        for t in (0..n).rev() {
             track_lines.push(plate_line(t, pos[t], !solved && target == Some(t + 1)));
         }
         track_lines.push(Line::from(""));
@@ -854,7 +896,7 @@ impl App {
         } else {
             Line::from(vec![
                 format!("{} {} / {}   ", self.tr("step.click"), idx, nclicks).fg(Color::White),
-                format!("· {}/6 {}", centered, self.tr("step.pins")).fg(Color::DarkGray),
+                format!("· {}/{} {}", centered, n, self.tr("step.pins")).fg(Color::DarkGray),
             ])
         });
         let lock_title = format!("{} — {}", self.tr("step.lock"), name);
@@ -948,26 +990,19 @@ fn load_locks(file: &str) -> Vec<Lock> {
 }
 
 fn step_from_lock(lock: &Lock) -> Result<StepState, String> {
-    let start = lock.start.ok_or("no start position recorded")?;
-    let groups =
-        parse_solution_steps(&lock.solution).ok_or("no step-by-step solution recorded")?;
+    let start = lock.start.clone().ok_or("no start position recorded")?;
+    let groups = parse_solution_steps(&lock.solution, lock.rules.len())
+        .ok_or("no step-by-step solution recorded")?;
     let mat = build_matrix(&lock.rules)?;
     Ok(StepState::new(lock.name.clone(), mat, start, groups))
 }
 
-fn parse_start(s: &str) -> Option<[i32; 6]> {
-    let nums: Vec<i32> = s
-        .split(|c: char| !c.is_ascii_digit() && c != '-')
+// All integers in a free-form string (commas/spaces/brackets ok).
+fn parse_start(s: &str) -> Vec<i32> {
+    s.split(|c: char| !c.is_ascii_digit() && c != '-')
         .filter(|x| !x.is_empty())
         .filter_map(|x| x.parse().ok())
-        .collect();
-    if nums.len() == 6 {
-        let mut a = [0i32; 6];
-        a.copy_from_slice(&nums);
-        Some(a)
-    } else {
-        None
-    }
+        .collect()
 }
 
 fn tab_span(label: &str, active: bool) -> Span<'static> {
@@ -1001,13 +1036,16 @@ fn field_line<'a>(label: &str, value: &str, focused: bool) -> Line<'a> {
 
 fn lock_detail_lines(l: &Lock, i18n: &I18n) -> Vec<Line<'static>> {
     let mut out = vec![Line::from(l.name.clone().bold().fg(Color::Cyan)), Line::from("")];
-    out.push(Line::from(i18n.get("label.rules").to_string().fg(Color::DarkGray)));
-    for i in 0..6 {
-        let r = if l.rules[i].is_empty() { "-" } else { &l.rules[i] };
+    out.push(Line::from(
+        format!("{} · {} {}", i18n.get("label.rules"), l.rules.len(), i18n.get("step.tumbler"))
+            .fg(Color::DarkGray),
+    ));
+    for (i, r) in l.rules.iter().enumerate() {
+        let r = if r.is_empty() { "-" } else { r };
         out.push(Line::from(format!("  {}: {}", i + 1, r)));
     }
     out.push(Line::from(""));
-    match l.start {
+    match &l.start {
         Some(s) => out.push(Line::from(format!(
             "Start  [{}]",
             s.iter().map(|n| n.to_string()).collect::<Vec<_>>().join(", ")
@@ -1123,6 +1161,7 @@ fn keycap(k: char) -> [String; 3] {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nameless_locksmith::goal;
     use ratatui::{backend::TestBackend, Terminal};
 
     // Every key present in English must also exist in every other language, and
@@ -1225,7 +1264,9 @@ mod tests {
 
         app.screen = Screen::Solve;
         app.solve.name = "Vault behind the inn".into();
-        app.solve.rules = ["3r, 6l", "-", "1r, 4l, 6r", "2r, 5r, 6l", "-", "3l"].map(String::from);
+        app.solve.rules = ["3r, 6l", "-", "1r, 4l, 6r", "2r, 5r, 6l", "-", "3l"]
+            .map(String::from)
+            .to_vec();
         app.solve.start = "5, 3, 6, 7, 2, 7".into();
         app.run_solve();
         terminal.draw(|f| app.draw(f)).unwrap();
@@ -1236,13 +1277,15 @@ mod tests {
     //   cargo test render_solve_animation -- --nocapture
     #[test]
     fn render_solve_animation() {
-        assert_ne!(anim_positions(0), GOAL, "frame 0 should be mid-spin");
-        assert_eq!(anim_positions(ANIM_END), GOAL, "final frame should be solved");
+        assert_ne!(anim_positions(0, 6), goal(6), "frame 0 should be mid-spin");
+        assert_eq!(anim_positions(ANIM_END, 6), goal(6), "final frame should be solved");
 
         let mut app = App::new("history-of-locks.md");
         app.confirm_language();
         app.screen = Screen::Solve;
-        app.solve.rules = ["3r, 6l", "-", "1r, 4l, 6r", "2r, 5r, 6l", "-", "3l"].map(String::from);
+        app.solve.rules = ["3r, 6l", "-", "1r, 4l, 6r", "2r, 5r, 6l", "-", "3l"]
+            .map(String::from)
+            .to_vec();
         app.solve.start = "5, 3, 6, 7, 2, 7".into();
         app.run_solve();
         assert_eq!(app.solve_anim, Some(0)); // solving kicks off the animation
@@ -1253,6 +1296,24 @@ mod tests {
             terminal.draw(|t| app.draw(t)).unwrap();
             println!("\n--- anim frame {} ---\n{}", f, terminal.backend());
         }
+    }
+
+    // Step-through renders for a non-6 tumbler lock without panicking.
+    #[test]
+    fn render_step_three_tumblers() {
+        let mat = build_matrix(&["2r".to_string(), "-".to_string(), "1l".to_string()]).unwrap();
+        let sol = solve(&[6, 2, 5], &mat).unwrap();
+        let mut app = App::new("history-of-locks.md");
+        app.confirm_language();
+        app.step = Some(StepState::new("mini".into(), mat, vec![6, 2, 5], sol.steps));
+        app.screen = Screen::Step;
+        let mut terminal = Terminal::new(TestBackend::new(80, 22)).unwrap();
+        if let Some(s) = app.step.as_mut() {
+            s.idx = s.clicks.len(); // walk to the end (solved)
+        }
+        terminal.draw(|f| app.draw(f)).unwrap();
+        let dump = format!("{}", terminal.backend());
+        assert!(dump.contains("OPEN"), "3-tumbler lock should show solved state");
     }
 
     // The language picker renders, and selecting Polski switches the catalog.

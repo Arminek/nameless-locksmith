@@ -29,12 +29,12 @@ mod tui;
 
 fn print_lock(l: &Lock) {
     println!("## {}", l.name);
-    println!("Rules:");
-    for i in 0..6 {
-        let r = if l.rules[i].is_empty() { "-" } else { &l.rules[i] };
+    println!("Rules ({} tumblers):", l.rules.len());
+    for (i, r) in l.rules.iter().enumerate() {
+        let r = if r.is_empty() { "-" } else { r };
         println!("  {}: {}", i + 1, r);
     }
-    match l.start {
+    match &l.start {
         Some(s) => println!(
             "Start: [{}]",
             s.iter().map(|n| n.to_string()).collect::<Vec<_>>().join(", ")
@@ -80,6 +80,8 @@ const TEMPLATE: &str = "\
 #     dependency has room to move and be seen.
 #
 # Lines starting with '#' are ignored. Spaces are optional.
+# The number of tumblers (2..8) is inferred from how many rule lines / Start
+# positions you give — list one rule per tumbler. This example has 6.
 # ---------------------------------------------------------------------------
 
 Name: my new lock
@@ -92,7 +94,7 @@ Rules:
 5: -
 6: 3l
 
-# Start = the current position (1-7) of each plate, tumblers 1..6, left to right.
+# Start = the current position (1-7) of each plate, left to right.
 # Goal is always to center every plate at 4.
 Start:
 [5, 3, 6, 7, 2, 7]
@@ -315,27 +317,29 @@ fn main() {
                 exit(1);
             });
             // Echo back what was understood, so the user can confirm the capture.
-            println!("Lock: {}", name);
+            let goal_str = vec!["4"; rules.len()].join(", ");
+            println!("Lock: {}  ({} tumblers)", name, rules.len());
             println!("Rules (interpreted):");
-            for i in 0..6 {
-                let r = if rules[i].is_empty() { "-" } else { &rules[i] };
+            for (i, r) in rules.iter().enumerate() {
+                let r = if r.is_empty() { "-" } else { r };
                 println!("  {}: {}", i + 1, r);
             }
             println!(
                 "Start:  [{}]",
                 start.iter().map(|n| n.to_string()).collect::<Vec<_>>().join(", ")
             );
-            println!("Goal:   [4, 4, 4, 4, 4, 4]   (center every plate)");
+            println!("Goal:   [{}]   (center every plate)", goal_str);
             println!();
 
-            match solve(start, &mat) {
+            match solve(&start, &mat) {
                 None => {
                     eprintln!(
-                        "NO SOLUTION — the goal [4,4,4,4,4,4] cannot be reached from this start\n\
+                        "NO SOLUTION — the goal [{}] cannot be reached from this start\n\
                          without a plate hitting a wall (position <1 or >7).\n\
                          This usually means a rule was mis-read while a plate sat at a wall\n\
                          (a blocked [D] press hides dependencies). Re-capture with the plates\n\
-                         nudged toward the middle, then try again."
+                         nudged toward the middle, then try again.",
+                        goal_str
                     );
                     exit(1);
                 }

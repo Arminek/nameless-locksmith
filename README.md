@@ -5,10 +5,11 @@ minigame in Gothic Remake**.
 
 **▶ Try it in your browser: https://arminek.github.io/nameless-locksmith/**
 
-Each lock has 6 interconnected tumblers (plates) that slide along a 1–7 track. Moving one
-tumbler forces others to move, and no plate may ever fall below 1 or past 7. The goal is to
-center every plate at position **4**. `locks` finds the **shortest wall-safe key sequence**
-via breadth-first search over all 7⁶ plate states, and keeps a log of every lock you've solved.
+Each lock has **2–8 interconnected tumblers** (plates, 6 being the most common) that slide along
+a 1–7 track. Moving one tumbler forces others to move, and no plate may ever fall below 1 or past
+7. The goal is to center every plate at position **4**. `locks` finds the **shortest wall-safe
+key sequence** via breadth-first search over all 7ᴺ plate states, and keeps a log of every lock
+you've solved. The tumbler count is inferred from the input (CLI, TUI, and web).
 
 ## Interactive TUI
 

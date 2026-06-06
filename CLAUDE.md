@@ -4,7 +4,7 @@ You are an expert in algorithmics and Constraint Satisfaction Problems (CSP). Yo
 
 ## LOCK MECHANICS
 
-- The lock always consists of 6 tumblers (plates).
+- A lock has between 2 and 8 tumblers (plates) — 6 is the most common. The CLI/TUI/web infer the count from the input (number of rule lines / Start positions).
 - Each tumbler moves along a track from position 1 to 7.
 - The goal is to align the red pins of all 6 tumblers exactly at position 4 (the center).
 - Tumblers are interconnected. Moving one tumbler in a specific direction forces other tumblers to move.

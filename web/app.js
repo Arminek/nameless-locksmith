@@ -1,15 +1,12 @@
 // app.js — the web UI. Mirrors the TUI (Browse / Solve / Step) using the JS
 // solver port and the shared i18n + history data.
 
-import {
-  buildMatrix,
-  solve,
-  applyClick,
-  parseSolutionSteps,
-  parseStart,
-  stepLine,
-} from "./solver.js";
+// The solver (build_matrix + BFS) is the real Rust core, compiled to WebAssembly.
+import init, { solve_lock, build_matrix } from "./pkg/nameless_locksmith_wasm.js";
+import { applyClick, parseSolutionSteps, parseStart, stepLine } from "./helpers.js";
 import { LANGS, I18N, HISTORY } from "./data.js";
+
+await init(); // load the wasm module before the app renders
 
 const SVGNS = "http://www.w3.org/2000/svg";
 const $ = (s) => document.querySelector(s);
@@ -335,8 +332,12 @@ function openStepFromLock(l) {
   if (!l.start) return;
   const groups = parseSolutionSteps(l.solution || [], l.rules.length);
   if (!groups) return;
-  const { mat, err } = buildMatrix(l.rules);
-  if (err) return setStatus(err);
+  let mat;
+  try {
+    mat = build_matrix(l.rules); // Rust/wasm
+  } catch (e) {
+    return setStatus(String(e));
+  }
   startStep(l.name, mat, l.start.slice(), groups);
 }
 
@@ -450,11 +451,14 @@ async function runSolve() {
   const start = parseStart(s.start);
   if (start.length !== s.n)
     return showResultMessage(`✗ ${tr("solve.err_count")} (${s.n})`, "error");
-  const { mat, err } = buildMatrix(s.rules.slice(0, s.n));
-  if (err) return showResultMessage(`✗ ${err}`, "error");
-  const sol = solve(start, mat);
-  if (sol && sol.err === "too-complex")
-    return showResultMessage(`✗ ${tr("solve.err_complex")}`, "error");
+  const rules = s.rules.slice(0, s.n);
+  let mat, sol;
+  try {
+    mat = build_matrix(rules); // Rust/wasm
+    sol = solve_lock(rules, start); // Rust/wasm — null if unsolvable
+  } catch (e) {
+    return showResultMessage(`✗ ${e}`, "error");
+  }
   if (!sol) return showResultMessage(`✗ ${tr("solve.err_nosolution")}`, "error");
 
   s.result = { sol, mat, start, n: s.n, name: s.name.trim() || tr("value.unnamed") };

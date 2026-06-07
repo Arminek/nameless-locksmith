@@ -116,12 +116,12 @@ back to English, and a test enforces that every catalog has the full key set.
 ## Web app
 
 A static browser version lives in [`web/`](web/) and is published to GitHub Pages at
-**https://arminek.github.io/nameless-locksmith/**. It reuses the same lock history and
-translations (generated from `src/i18n/` + `history-of-locks.md` by `web/build-data.mjs`) and a
-faithful JavaScript port of the solver — `web/verify.mjs` checks it against the checked-in
-history (and produces the same optimal solutions as the Rust binary). The lock is drawn in SVG,
-so the plates slide smoothly and the "cracking" animation plays for real. No build step or server
-needed — it's plain HTML/CSS/ES-modules.
+**https://arminek.github.io/nameless-locksmith/**. It runs the **same Rust solver compiled to
+WebAssembly** ([`web-wasm/`](web-wasm/), via `wasm-pack`) — so the web, CLI, and TUI share one
+solver with no re-implementation to keep in sync. It reuses the same lock history and translations
+too (generated from `src/i18n/` + `history-of-locks.md` by `web/build-data.mjs`). The lock is
+drawn in SVG, so the plates slide smoothly and the "cracking" animation plays for real; the UI is
+plain HTML/CSS/ES-modules. The Pages workflow builds the wasm and gates on the core's tests.
 
 ## Install
 

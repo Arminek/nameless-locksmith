@@ -1,15 +1,18 @@
 name: pages
 
-# Build and deploy the web app (web/) to GitHub Pages. Regenerates the shared
-# data from the i18n catalogs + history, verifies the JS solver against it, then
-# publishes the static site.
+# Build and deploy the web app (web/) to GitHub Pages. The solver runs as
+# WebAssembly compiled from the shared Rust core (web-wasm/), so the site uses
+# the exact same code as the CLI/TUI. We gate on the core's own tests, generate
+# the shared data, build the wasm, then publish the static site.
 on:
   push:
     branches: [main]
     paths:
       - "web/**"
-      - "src/i18n/**"
+      - "web-wasm/**"
+      - "src/**"
       - "history-of-locks.md"
+      - "Cargo.toml"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -31,14 +34,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Rust toolchain (+ wasm target)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: latest
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Generate data + verify solver
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verify solver, generate data, build wasm
         run: |
+          cargo test -p nameless-locksmith --lib
           node web/build-data.mjs
-          node web/verify.mjs
+          wasm-pack build web-wasm --target web --out-dir ../web/pkg --release
 
       - uses: actions/configure-pages@v5
 

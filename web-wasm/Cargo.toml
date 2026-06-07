@@ -1,0 +1,21 @@
+[package]
+name = "nameless-locksmith-wasm"
+version = "0.8.0"
+edition = "2021"
+description = "WebAssembly bindings for the nameless-locksmith solver"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+# Skip wasm-opt: the toolchain emits bulk-memory ops that some installed
+# wasm-opt versions reject. The unoptimized module is a little larger but works,
+# and the build is reproducible across machines/CI.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
+
+[dependencies]
+nameless-locksmith = { path = ".." }
+wasm-bindgen = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"

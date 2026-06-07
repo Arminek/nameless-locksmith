@@ -16,3 +16,6 @@ Thumbs.db
 
 # Playwright MCP test artifacts
 .playwright-mcp/
+
+# wasm-pack output (built in CI)
+web/pkg/

@@ -288,3 +288,86 @@ previous entry was 56 clicks and ended with plate 6 at 5 — pre-dated the tumbl
 6: 3x D
 7: 3x A
 ```
+
+## chest near arena big home
+
+**Rules:**
+```
+1: 4l
+2: 1l,4r,6l
+3: 6l
+4: 2r,6r
+5: 2r,6l
+6: 4r
+```
+
+**Start:** `[5, 6, 1, 3, 2, 1]`
+
+**Solution:** (30 clicks — solved by locks)
+```
+1: 4x D
+2: 1x D
+1: 1x D
+2: 1x D
+1: 1x D
+2: 1x D
+1: 1x D
+2: 1x D
+1: 1x D
+2: 1x D
+1: 1x D
+3: 3x A
+5: 1x A
+2: 1x D
+4: 1x A
+2: 1x D
+4: 1x A
+2: 1x D
+5: 1x A
+4: 1x A
+6: 1x D
+4: 1x A
+6: 3x D
+```
+
+## scatty chest
+
+**Rules:**
+```
+1: 4r
+2: 5r
+3: 5l
+4: 2r,3l,5l
+5: -
+```
+
+**Start:** `[6, 3, 2, 1, 7]`
+
+**Solution:** (31 clicks — solved by locks)
+```
+2: 2x D
+3: 4x A
+5: 1x A
+3: 1x A
+5: 1x A
+4: 1x A
+1: 1x D
+5: 1x A
+2: 1x D
+5: 1x A
+3: 1x A
+5: 1x A
+4: 1x A
+1: 1x D
+5: 1x A
+2: 1x D
+5: 1x A
+3: 1x A
+5: 1x A
+4: 1x A
+5: 1x A
+4: 1x A
+5: 1x A
+4: 1x A
+5: 3x A
+```

@@ -786,8 +786,13 @@ impl App {
 
     fn draw_solve(&mut self, f: &mut Frame, area: Rect) {
         let n = self.solve.n;
-        let [form, result] =
-            Layout::vertical([Constraint::Length((n + 5) as u16), Constraint::Fill(1)]).areas(area);
+        // left column: the form on top, the format/example help below it;
+        // right column: the result (and the cracking animation).
+        let [left, result] =
+            Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)])
+                .areas(area);
+        let [form, help] =
+            Layout::vertical([Constraint::Length((n + 5) as u16), Constraint::Fill(1)]).areas(left);
 
         let mut lines: Vec<Line> = Vec::new();
         lines.push(field_line(
@@ -809,6 +814,27 @@ impl App {
         f.render_widget(
             Paragraph::new(lines).block(Block::bordered().title(solve_title)),
             form,
+        );
+
+        // ----- always-visible format & examples panel -----
+        let dim = Color::DarkGray;
+        let help_lines: Vec<Line> = vec![
+            Line::from(format!(" {}", self.tr("help.example"))).fg(Color::Cyan),
+            Line::from("   1: 3r, 6l   2: -   3: 1r, 4l, 6r").fg(Color::White),
+            Line::from("   4: 2r, 5r, 6l   5: -   6: 3l").fg(Color::White),
+            Line::from(format!("   Start: 5,3,6,7,2,7  → {}", self.tr("help.solves")))
+                .fg(Color::White),
+            Line::from(""),
+            Line::from(strip_tags(self.tr("help.dirs"))).fg(dim),
+            Line::from(strip_tags(self.tr("help.start"))).fg(dim),
+            Line::from(strip_tags(self.tr("help.output"))).fg(dim),
+            Line::from(strip_tags(self.tr("help.tip"))).fg(dim),
+        ];
+        f.render_widget(
+            Paragraph::new(help_lines)
+                .wrap(Wrap { trim: false })
+                .block(Block::bordered().title(self.tr("solve.format").to_string())),
+            help,
         );
 
         // While the cracking animation plays, the result area shows the lock
@@ -1003,6 +1029,22 @@ fn parse_start(s: &str) -> Vec<i32> {
         .filter(|x| !x.is_empty())
         .filter_map(|x| x.parse().ok())
         .collect()
+}
+
+// Remove HTML tags from a localized help string (the help.* strings are written
+// with <b>/<i>/<code> markup for the web; the TUI shows them as plain text).
+fn strip_tags(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut in_tag = false;
+    for c in s.chars() {
+        match c {
+            '<' => in_tag = true,
+            '>' => in_tag = false,
+            _ if !in_tag => out.push(c),
+            _ => {}
+        }
+    }
+    out
 }
 
 fn tab_span(label: &str, active: bool) -> Span<'static> {

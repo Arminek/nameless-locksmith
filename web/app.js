@@ -396,7 +396,6 @@ function renderSolve() {
     },
   });
   form.append(el("div", { className: "btn-row" }, [solveBtn, exBtn]));
-  form.append(formatHelp());
 
   const result = el("div", { className: "card", id: "solve-result" }, [
     el("h2", { textContent: tr("result.title") }),
@@ -406,7 +405,11 @@ function renderSolve() {
   view.append(
     el("div", { className: "wrap" }, [
       el("div", { className: "cols" }, [
-        el("div", { className: "card" }, [el("h2", { textContent: tr("solve.title") }), form]),
+        el("div", { className: "card" }, [
+          el("h2", { textContent: tr("solve.title") }),
+          formatHelp(),
+          form,
+        ]),
         result,
       ]),
     ])

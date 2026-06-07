@@ -10,11 +10,11 @@
 
 tab.browse = Browse
 tab.solve  = Solve
-tab.step   = Step
+tab.step   = Show
 
 status.browse = Browse — ↑↓ move · / filter · Enter walk · d delete · Tab solve · q quit · e edit
 status.solve  = Solve — Tab/↑↓ fields · Enter solve · ^W walk · ^S save · Esc back
-status.step   = Step — →/Space next · ← prev · g reset · G end · Esc back
+status.step   = Show — →/Space next · ← prev · g reset · G end · Esc back
 status.filter = Filter — type to match names · Enter apply · Esc clear
 
 filter.title       = Filter

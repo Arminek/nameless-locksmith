@@ -3,11 +3,11 @@
 
 tab.browse = Огляд
 tab.solve  = Розв'язати
-tab.step   = Крок
+tab.step   = Показати
 
 status.browse = Огляд — ↑↓ рух · / фільтр · Enter показати · d видалити · Tab розв'язати · q вихід · e редагувати
 status.solve  = Розв'язання — Tab/↑↓ поля · Enter розв'язати · ^W показати · ^S зберегти · Esc назад
-status.step   = Крок — →/Space далі · ← назад · g скидання · G кінець · Esc назад
+status.step   = Показати — →/Space далі · ← назад · g скидання · G кінець · Esc назад
 status.filter = Фільтр — вводьте для пошуку · Enter застосувати · Esc очистити
 
 filter.title       = Фільтр

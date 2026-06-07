@@ -3,11 +3,11 @@
 
 tab.browse = Обзор
 tab.solve  = Решить
-tab.step   = Шаг
+tab.step   = Показать
 
 status.browse = Обзор — ↑↓ перемещение · / фильтр · Enter показать · d удалить · Tab решить · q выход · e изменить
 status.solve  = Решение — Tab/↑↓ поля · Enter решить · ^W показать · ^S сохранить · Esc назад
-status.step   = Шаг — →/Space далее · ← назад · g сброс · G конец · Esc назад
+status.step   = Показать — →/Space далее · ← назад · g сброс · G конец · Esc назад
 status.filter = Фильтр — вводите для поиска · Enter применить · Esc очистить
 
 filter.title       = Фильтр

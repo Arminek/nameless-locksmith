@@ -70,7 +70,7 @@ function parseIntArray(s) {
     .map((x) => x.trim())
     .filter((x) => x !== "")
     .map(Number);
-  return parts.length === 6 && parts.every(Number.isFinite) ? parts : null;
+  return parts.length > 0 && parts.every(Number.isFinite) ? parts : null;
 }
 
 function parseHistory(text) {
@@ -82,18 +82,19 @@ function parseHistory(text) {
     const end = k + 1 < starts.length ? starts[k + 1] : lines.length;
     const body = lines.slice(s + 1, end);
     const name = lines[s].slice(3).trim();
-    const rules = ["", "", "", "", "", ""];
     let start = null;
     let solution = [];
 
+    // Collect numbered rule lines; the tumbler count N is inferred (2..8), not
+    // fixed at 6 — mirrors rules_from_pairs in src/lib.rs.
+    const rulePairs = [];
     const ri = body.findIndex((l) => l.includes("**Rules"));
     if (ri >= 0) {
-      const content = fenceAfter(body, ri) ?? [];
-      for (const line of content) {
+      for (const line of fenceAfter(body, ri) ?? []) {
         const c = line.indexOf(":");
         if (c < 0) continue;
         const n = Number(line.slice(0, c).trim());
-        if (n >= 1 && n <= 6) rules[n - 1] = line.slice(c + 1).trim();
+        if (Number.isInteger(n)) rulePairs.push([n, line.slice(c + 1).trim()]);
       }
     }
     const si = body.findIndex((l) => l.includes("**Start"));
@@ -103,6 +104,12 @@ function parseHistory(text) {
       const content = fenceAfter(body, soli);
       if (content) solution = content.filter((l) => l.trim() !== "");
     }
+
+    const maxIdx = rulePairs.reduce((m, [i]) => Math.max(m, i), 0);
+    const n = Math.max(maxIdx, start ? start.length : 0);
+    const rules = Array(n).fill("");
+    for (const [i, t] of rulePairs) if (i >= 1 && i <= n) rules[i - 1] = t;
+
     locks.push({ name, rules, start, solution });
   });
   return locks;

@@ -3,11 +3,11 @@
 
 tab.browse = Explorar
 tab.solve  = Resolver
-tab.step   = Paso
+tab.step   = Mostrar
 
 status.browse = Explorar — ↑↓ mover · / filtrar · Enter reproducir · d eliminar · Tab resolver · q salir · e editar
 status.solve  = Resolver — Tab/↑↓ campos · Enter resolver · ^W reproducir · ^S guardar · Esc volver
-status.step   = Paso — →/Space siguiente · ← anterior · g reiniciar · G fin · Esc volver
+status.step   = Mostrar — →/Space siguiente · ← anterior · g reiniciar · G fin · Esc volver
 status.filter = Filtro — escribe para buscar · Enter aplicar · Esc borrar
 
 filter.title       = Filtro

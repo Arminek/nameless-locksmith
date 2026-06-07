@@ -3,11 +3,11 @@
 
 tab.browse = Przeglądaj
 tab.solve  = Rozwiąż
-tab.step   = Krok
+tab.step   = Pokaż
 
 status.browse = Przeglądaj — ↑↓ ruch · / filtr · Enter podgląd · d usuń · Tab rozwiąż · q wyjście · e edytuj
 status.solve  = Rozwiązuj — Tab/↑↓ pola · Enter licz · ^W podgląd · ^S zapisz · Esc wstecz
-status.step   = Krok — →/Spacja dalej · ← wstecz · g reset · G koniec · Esc wstecz
+status.step   = Pokaż — →/Spacja dalej · ← wstecz · g reset · G koniec · Esc wstecz
 status.filter = Filtr — pisz aby dopasować · Enter zatwierdź · Esc wyczyść
 
 filter.title       = Filtr

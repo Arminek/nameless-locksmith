@@ -261,7 +261,7 @@ previous entry was 56 clicks and ended with plate 6 at 5 — pre-dated the tumbl
 6: 1x A
 ```
 
-## scatty chest
+## kharim chest
 
 **Rules:**
 ```

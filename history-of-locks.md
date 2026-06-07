@@ -371,3 +371,70 @@ previous entry was 56 clicks and ended with plate 6 at 5 — pre-dated the tumbl
 4: 1x A
 5: 3x A
 ```
+
+## second chest behind ubert in mine
+
+**Rules:**
+```
+1: 3l
+2: 1l,3r,5r
+3: 1r,2r,4r
+4: -
+5: 4r,3l
+```
+
+**Start:** `[1, 6, 2, 3, 3]`
+
+**Solution:** (62 clicks — solved by locks)
+```
+2: 1x D
+1: 1x D
+2: 1x D
+1: 1x D
+3: 1x A
+1: 1x D
+3: 1x A
+1: 1x D
+3: 1x A
+4: 5x D
+5: 1x A
+1: 1x D
+2: 1x D
+1: 1x D
+4: 1x D
+5: 1x A
+2: 1x D
+1: 1x D
+3: 1x A
+4: 2x D
+5: 1x A
+1: 1x D
+2: 1x D
+1: 1x D
+4: 1x D
+5: 1x A
+2: 1x D
+1: 1x D
+3: 1x A
+4: 2x D
+5: 1x A
+1: 1x D
+2: 1x D
+1: 1x D
+4: 1x D
+5: 1x A
+2: 1x D
+1: 1x D
+3: 1x A
+4: 2x D
+5: 1x A
+1: 1x D
+2: 1x D
+1: 1x D
+4: 1x D
+5: 1x A
+2: 1x D
+3: 2x A
+4: 3x D
+5: 3x A
+```

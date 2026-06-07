@@ -5,7 +5,7 @@ tab.browse = Przeglądaj
 tab.solve  = Rozwiąż
 tab.step   = Krok
 
-status.browse = Przeglądaj — ↑↓ ruch · / filtr · Enter podgląd · d usuń · Tab rozwiąż · q wyjście
+status.browse = Przeglądaj — ↑↓ ruch · / filtr · Enter podgląd · d usuń · Tab rozwiąż · q wyjście · e edytuj
 status.solve  = Rozwiązuj — Tab/↑↓ pola · Enter licz · ^W podgląd · ^S zapisz · Esc wstecz
 status.step   = Krok — →/Spacja dalej · ← wstecz · g reset · G koniec · Esc wstecz
 status.filter = Filtr — pisz aby dopasować · Enter zatwierdź · Esc wyczyść
@@ -23,8 +23,10 @@ value.none     = (brak)
 value.unnamed  = bez nazwy
 msg.cantwalk   = Nie można odtworzyć
 msg.saved      = Zapisano
+msg.updated    = Zaktualizowano
 browse.delete  = Usuń
 browse.deleted = Usunięto
+browse.edit    = Edytuj
 
 solve.title          = Rozwiąż zamek
 field.name           = Nazwa

@@ -5,7 +5,7 @@ tab.browse = Parcourir
 tab.solve  = Résoudre
 tab.step   = Étape
 
-status.browse = Parcourir — ↑↓ déplacer · / filtrer · Enter lire · d supprimer · Tab résoudre · q quitter
+status.browse = Parcourir — ↑↓ déplacer · / filtrer · Enter lire · d supprimer · Tab résoudre · q quitter · e modifier
 status.solve  = Résoudre — Tab/↑↓ champs · Enter résoudre · ^W lire · ^S enregistrer · Esc retour
 status.step   = Étape — →/Space suivant · ← précédent · g réinit · G fin · Esc retour
 status.filter = Filtre — tapez pour filtrer · Enter appliquer · Esc effacer
@@ -23,8 +23,10 @@ value.none     = (aucun)
 value.unnamed  = sans nom
 msg.cantwalk   = Lecture impossible
 msg.saved      = Enregistré
+msg.updated    = Mis à jour
 browse.delete  = Supprimer
 browse.deleted = Supprimé
+browse.edit    = Modifier
 
 solve.title          = Résoudre une serrure
 field.name           = Nom

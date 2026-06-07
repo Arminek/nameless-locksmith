@@ -260,3 +260,31 @@ previous entry was 56 clicks and ended with plate 6 at 5 — pre-dated the tumbl
 5: 3x A
 6: 1x A
 ```
+
+## scatty chest
+
+**Rules:**
+```
+1: -
+2: -
+3: 2l,6r
+4: -
+5: 2l
+6: 5r,3l
+7: 6r,4l,1l
+```
+
+**Start:** `[3, 3, 4, 2, 3, 7, 1]`
+
+**Solution:** (24 clicks — solved by locks)
+```
+1: 4x A
+2: 2x A
+3: 2x D
+4: 5x A
+5: 1x A
+3: 1x D
+5: 3x A
+6: 3x D
+7: 3x A
+```

@@ -426,6 +426,91 @@ pub fn remove_lock(text: &str, index: usize) -> Option<String> {
     Some(s)
 }
 
+// Return `text` with the lock at `index` replaced by a freshly rendered section
+// (rules / start / solution). Returns None if `index` is out of range.
+pub fn replace_lock(
+    text: &str,
+    index: usize,
+    name: &str,
+    rules: &[String],
+    start: &[i32],
+    sol: &Solution,
+) -> Option<String> {
+    let lines: Vec<&str> = text.lines().collect();
+    let starts: Vec<usize> = lines
+        .iter()
+        .enumerate()
+        .filter(|(_, l)| l.starts_with("## "))
+        .map(|(i, _)| i)
+        .collect();
+    let s = *starts.get(index)?;
+    let end = starts.get(index + 1).copied().unwrap_or(lines.len());
+
+    // everything before the lock, trailing blanks trimmed
+    let mut out: Vec<String> = lines[..s].iter().map(|l| l.to_string()).collect();
+    while out.last().is_some_and(|l| l.trim().is_empty()) {
+        out.pop();
+    }
+    if !out.is_empty() {
+        out.push(String::new()); // one blank line before the section
+    }
+
+    // the new section (lock_markdown wraps with leading/trailing newlines)
+    let section = lock_markdown(name, rules, start, sol);
+    for l in section.trim_matches('\n').lines() {
+        out.push(l.to_string());
+    }
+
+    // everything after the lock, with its leading blanks dropped
+    let tail = &lines[end..];
+    if tail.iter().any(|l| !l.trim().is_empty()) {
+        out.push(String::new());
+        let mut started = false;
+        for l in tail {
+            if !started && l.trim().is_empty() {
+                continue;
+            }
+            started = true;
+            out.push(l.to_string());
+        }
+    }
+    while out.last().is_some_and(|l| l.trim().is_empty()) {
+        out.pop();
+    }
+    let mut joined = out.join("\n");
+    joined.push('\n');
+    Some(joined)
+}
+
+// Replace the lock at `index` in the history file, rewriting it in place.
+pub fn replace_lock_in_file(
+    file: &str,
+    index: usize,
+    name: &str,
+    rules: &[String],
+    start: &[i32],
+    sol: &Solution,
+) -> Result<(), String> {
+    let text = fs::read_to_string(file).map_err(|e| format!("cannot read {}: {}", file, e))?;
+    let updated = replace_lock(&text, index, name, rules, start, sol)
+        .ok_or_else(|| format!("no lock at position {}", index + 1))?;
+    fs::write(file, updated).map_err(|e| format!("cannot write {}: {}", file, e))
+}
+
+// Render a lock as a `solve`-style input block (for `locks edit`).
+pub fn input_block(name: &str, rules: &[String], start: &[i32]) -> String {
+    let mut out = format!("Name: {}\n\nRules:\n", name);
+    for (i, r) in rules.iter().enumerate() {
+        let r = if r.is_empty() { "-" } else { r };
+        out.push_str(&format!("{}: {}\n", i + 1, r));
+    }
+    out.push_str(&format!(
+        "\nStart:\n[{}]\n",
+        start.iter().map(|n| n.to_string()).collect::<Vec<_>>().join(", ")
+    ));
+    out
+}
+
 // Remove the lock at `index` from the history file, returning the removed name.
 pub fn remove_lock_from_file(file: &str, index: usize) -> Result<String, String> {
     let text = fs::read_to_string(file).map_err(|e| format!("cannot read {}: {}", file, e))?;
@@ -626,6 +711,22 @@ mod tests {
         assert_eq!(l.rules[0], "2l");
         assert_eq!(l.start, Some(vec![3, 4]));
         assert_eq!(l.solution, vec!["1: 2x D".to_string(), "2: 1x A".to_string()]);
+    }
+
+    #[test]
+    fn replace_lock_rewrites_in_place() {
+        let md = "# History\n\n## A\n\nbody a\n\n## B\n\nold b\n\n## C\n\nbody c\n";
+        let r = rules(&["3r", "-", "-"]);
+        let sol = solve(&[5, 4, 4], &build_matrix(&r).unwrap()).unwrap();
+        let after = replace_lock(md, 1, "B2", &r, &[5, 4, 4], &sol).unwrap();
+        let locks = parse_history(&after);
+        // same count, B replaced by B2 with the new rules/start
+        assert_eq!(locks.iter().map(|l| l.name.clone()).collect::<Vec<_>>(), ["A", "B2", "C"]);
+        assert_eq!(locks[1].rules, r);
+        assert_eq!(locks[1].start, Some(vec![5, 4, 4]));
+        assert_eq!(locks[0].name, "A"); // neighbours intact
+        assert_eq!(locks[2].name, "C");
+        assert!(replace_lock(md, 9, "x", &r, &[5, 4, 4], &sol).is_none());
     }
 
     #[test]

@@ -24,8 +24,8 @@ use ratatui::{
 };
 
 use nameless_locksmith::{
-    append_lock, build_matrix, parse_history, parse_solution_steps, remove_lock_from_file, solve,
-    Lock, Solution, MAX_TUMBLERS, MIN_TUMBLERS,
+    append_lock, build_matrix, parse_history, parse_solution_steps, remove_lock_from_file,
+    replace_lock_in_file, solve, Lock, Solution, MAX_TUMBLERS, MIN_TUMBLERS,
 };
 
 // ---------- public entry point ----------
@@ -154,6 +154,7 @@ struct SolveState {
     // focus fields: 0 = tumbler count, 1 = name, 2..=n+1 = rules, n+2 = start
     focus: usize,
     result: SolveResult,
+    editing: Option<usize>, // history index being edited (^S replaces it), else None
 }
 
 impl SolveState {
@@ -270,6 +271,7 @@ impl App {
                 start: String::new(),
                 focus: 1, // start on the name field
                 result: SolveResult::None,
+                editing: None,
             },
             step: None,
             step_list: ListState::default(),
@@ -384,6 +386,7 @@ impl App {
         match key.code {
             KeyCode::Char('q') | KeyCode::Esc => self.quit = true,
             KeyCode::Tab => {
+                self.solve.editing = None; // Tab = compose a new lock
                 self.screen = Screen::Solve;
                 self.status = self.tr("status.solve").to_string();
             }
@@ -394,9 +397,33 @@ impl App {
             KeyCode::Down | KeyCode::Char('j') => self.move_selection(1),
             KeyCode::Up | KeyCode::Char('k') => self.move_selection(-1),
             KeyCode::Char('d') | KeyCode::Delete => self.request_delete(),
+            KeyCode::Char('e') => self.start_edit(),
             KeyCode::Enter => self.enter_step_from_browse(),
             _ => {}
         }
+    }
+
+    // Load the selected lock into the Solve form for editing; saving replaces it.
+    fn start_edit(&mut self) {
+        let actual = match self.filtered().get(self.browse.selected).copied() {
+            Some(i) => i,
+            None => return,
+        };
+        let lock = self.locks[actual].clone();
+        let n = lock.rules.len().clamp(MIN_TUMBLERS, MAX_TUMBLERS);
+        let start = lock.start.clone().unwrap_or_else(|| vec![4; n]);
+        let s = &mut self.solve;
+        s.editing = Some(actual);
+        s.n = n;
+        s.rules = lock.rules.clone();
+        s.rules.resize(n, String::new());
+        s.name = lock.name.clone();
+        s.start = start.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(", ");
+        s.focus = 1;
+        s.result = SolveResult::None;
+        self.solve_anim = None;
+        self.screen = Screen::Solve;
+        self.status = format!("{} \"{}\"  ·  Enter, ^S", self.tr("browse.edit"), lock.name);
     }
 
     fn request_delete(&mut self) {
@@ -608,9 +635,16 @@ impl App {
             steps: groups,
         };
         let rules: Vec<String> = self.solve.rules[..self.solve.n].to_vec();
-        match append_lock(&self.file, &name, &rules, &start, &sol) {
-            Ok(()) => {
-                self.status = format!("{} \"{}\" → {}", self.tr("msg.saved"), name, self.file);
+        let result = match self.solve.editing {
+            // editing an existing lock → replace it in place
+            Some(idx) => replace_lock_in_file(&self.file, idx, &name, &rules, &start, &sol)
+                .map(|()| self.tr("msg.updated").to_string()),
+            None => append_lock(&self.file, &name, &rules, &start, &sol)
+                .map(|()| self.tr("msg.saved").to_string()),
+        };
+        match result {
+            Ok(verb) => {
+                self.status = format!("{} \"{}\" → {}", verb, name, self.file);
                 self.locks = load_locks(&self.file); // refresh browse list
             }
             Err(e) => self.status = e,
@@ -1356,6 +1390,36 @@ mod tests {
         terminal.draw(|f| app.draw(f)).unwrap();
         let dump = format!("{}", terminal.backend());
         assert!(dump.contains("OPEN"), "3-tumbler lock should show solved state");
+    }
+
+    // Pressing 'e' in Browse loads a lock into Solve; re-solving + ^S replaces
+    // it in the history file (no duplicate, same count).
+    #[test]
+    fn edit_flow_replaces_lock_in_file() {
+        use std::fs;
+        let src = fs::read_to_string("history-of-locks.md").unwrap();
+        let path = std::env::temp_dir().join("nlsmith-edit-flow-test.md");
+        let path = path.to_str().unwrap().to_string();
+        fs::write(&path, &src).unwrap();
+
+        let mut app = App::new(&path);
+        let before = app.locks.len();
+        app.confirm_language();
+        app.browse.selected = 0; // first lock
+
+        app.on_key(key('e')); // load into Solve for editing
+        assert_eq!(app.screen, Screen::Solve);
+        assert_eq!(app.solve.editing, Some(0));
+        assert!(!app.solve.rules[0].is_empty()); // form populated
+
+        app.run_solve(); // re-solve the loaded lock
+        app.save_solved(); // replace in place
+        assert!(app.status.contains("Updated"));
+        // count unchanged; file still parses to the same number of locks
+        assert_eq!(app.locks.len(), before);
+        assert_eq!(parse_history(&fs::read_to_string(&path).unwrap()).len(), before);
+
+        fs::remove_file(&path).ok();
     }
 
     // The language picker renders, and selecting Polski switches the catalog.

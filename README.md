@@ -205,8 +205,15 @@ The solution is a grouped key sequence to type in-game:
 | `locks find <query>` | Search lock names (case-insensitive). |
 | `locks template` | Print a ready-to-fill input file for `solve`. |
 | `locks solve <input\|->` | Solve a lock from a file (or stdin via `-`). |
+| `locks edit <index\|substring>` | Print a lock as an editable input block. |
 | `locks remove <index\|substring>` | Delete a lock from the history (alias: `rm`). |
 | `locks help` | Show full help. |
+
+**Editing a lock:** `locks edit "tower" > lock.txt`, fix the rules/start, then
+`locks solve lock.txt --replace "tower"` re-solves and updates it in place. In the TUI, press
+`e` on a lock in Browse to load it into the Solve form; `^S` writes it back. (The web app is
+read-only over the built-in history — it has no persistent store, so use the CLI/TUI to capture
+and edit locks.)
 
 **Options:** `--save "<name>"` appends a solved lock to the history;
 `--file <path>` selects a different history file (default `history-of-locks.md`).

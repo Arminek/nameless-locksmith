@@ -5,7 +5,7 @@ tab.browse = Огляд
 tab.solve  = Розв'язати
 tab.step   = Крок
 
-status.browse = Огляд — ↑↓ рух · / фільтр · Enter показати · d видалити · Tab розв'язати · q вихід
+status.browse = Огляд — ↑↓ рух · / фільтр · Enter показати · d видалити · Tab розв'язати · q вихід · e редагувати
 status.solve  = Розв'язання — Tab/↑↓ поля · Enter розв'язати · ^W показати · ^S зберегти · Esc назад
 status.step   = Крок — →/Space далі · ← назад · g скидання · G кінець · Esc назад
 status.filter = Фільтр — вводьте для пошуку · Enter застосувати · Esc очистити
@@ -23,8 +23,10 @@ value.none     = (немає)
 value.unnamed  = без назви
 msg.cantwalk   = Неможливо показати
 msg.saved      = Збережено
+msg.updated    = Оновлено
 browse.delete  = Видалити
 browse.deleted = Видалено
+browse.edit    = Редагувати
 
 solve.title          = Розв'язати замок
 field.name           = Назва

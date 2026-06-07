@@ -19,9 +19,42 @@ use std::io::Read;
 use std::process::exit;
 
 use nameless_locksmith::{
-    append_lock, build_matrix, parse_history, parse_input, remove_lock_from_file, solution_lines,
-    solve, Lock, DEFAULT_FILE,
+    append_lock, build_matrix, input_block, parse_history, parse_input, remove_lock_from_file,
+    replace_lock_in_file, solution_lines, solve, Lock, DEFAULT_FILE,
 };
+
+// Resolve a lock query (1-based index or name substring) to a 0-based index.
+fn resolve_index(locks: &[Lock], q: &str) -> Result<usize, String> {
+    if let Ok(n) = q.parse::<usize>() {
+        if n >= 1 && n <= locks.len() {
+            return Ok(n - 1);
+        }
+        return Err(format!("no lock at position {} (history has {})", n, locks.len()));
+    }
+    let ql = q.to_lowercase();
+    let matches: Vec<usize> = locks
+        .iter()
+        .enumerate()
+        .filter(|(_, l)| l.name.to_lowercase().contains(&ql))
+        .map(|(i, _)| i)
+        .collect();
+    match matches.as_slice() {
+        [] => Err(format!("no lock matches \"{}\"", q)),
+        [one] => Ok(*one),
+        many => {
+            let names: Vec<String> = many
+                .iter()
+                .map(|&i| format!("  {}. {}", i + 1, locks[i].name))
+                .collect();
+            Err(format!(
+                "\"{}\" matches {} locks — be more specific:\n{}",
+                q,
+                many.len(),
+                names.join("\n")
+            ))
+        }
+    }
+}
 
 mod tui;
 
@@ -121,11 +154,13 @@ COMMANDS\n\
   locks find <query>              Search lock names (case-insensitive).\n\
   locks template                  Print a ready-to-fill input file for `solve`.\n\
   locks solve <input|->  [opts]   Solve a lock from a file (or stdin via \"-\").\n\
+  locks edit <index|substring>    Print a lock as an editable input block.\n\
   locks remove <index|substring>  Delete a lock from the history (alias: rm).\n\
   locks help                      Show this help.\n\
 \n\
 SOLVE OPTIONS\n\
   --save \"<name>\"                 Append the solved lock to the history file.\n\
+  --replace <index|substring>     Re-solve and replace an existing lock in place.\n\
 \n\
 GLOBAL OPTIONS\n\
   --file <path>                   History file to use (default: {def}).\n\
@@ -246,46 +281,39 @@ fn main() {
             if args.is_empty() {
                 usage();
             }
-            let q = &args[0];
             let locks = parse_history(&read_source(&file));
-            // Resolve the argument to a single lock index (0-based).
-            let idx = if let Ok(n) = q.parse::<usize>() {
-                if n >= 1 && n <= locks.len() {
-                    Some(n - 1)
-                } else {
-                    eprintln!("no lock at position {} (history has {})", n, locks.len());
-                    exit(1);
-                }
-            } else {
-                let ql = q.to_lowercase();
-                let matches: Vec<usize> = locks
-                    .iter()
-                    .enumerate()
-                    .filter(|(_, l)| l.name.to_lowercase().contains(&ql))
-                    .map(|(i, _)| i)
-                    .collect();
-                match matches.as_slice() {
-                    [] => {
-                        println!("no lock matches \"{}\"", q);
-                        exit(1);
-                    }
-                    [one] => Some(*one),
-                    many => {
-                        eprintln!("\"{}\" matches {} locks — be more specific:", q, many.len());
-                        for &i in many {
-                            eprintln!("  {}. {}", i + 1, locks[i].name);
-                        }
-                        exit(1);
-                    }
-                }
-            };
-            match remove_lock_from_file(&file, idx.unwrap()) {
+            let idx = resolve_index(&locks, &args[0]).unwrap_or_else(|e| {
+                eprintln!("{}", e);
+                exit(1);
+            });
+            match remove_lock_from_file(&file, idx) {
                 Ok(name) => println!("Removed \"{}\" from {}", name, file),
                 Err(e) => {
                     eprintln!("{}", e);
                     exit(1);
                 }
             }
+        }
+        "edit" => {
+            // Print the matching lock as a `solve`-style input block so it can be
+            // captured, edited, and re-solved with `solve <file> --replace <id>`.
+            if args.is_empty() {
+                usage();
+            }
+            let locks = parse_history(&read_source(&file));
+            let idx = resolve_index(&locks, &args[0]).unwrap_or_else(|e| {
+                eprintln!("{}", e);
+                exit(1);
+            });
+            let l = &locks[idx];
+            let start = l.start.clone().unwrap_or_else(|| vec![4; l.rules.len()]);
+            eprintln!(
+                "# Editing lock {} \"{}\". Edit below, then:\n#   locks solve <file> --replace \"{}\"\n",
+                idx + 1,
+                l.name,
+                l.name
+            );
+            print!("{}", input_block(&l.name, &l.rules, &start));
         }
         "solve" => {
             if args.is_empty() {
@@ -305,6 +333,13 @@ fn main() {
                     usage();
                 }
                 save_name = Some(args[p + 1].clone());
+            }
+            let mut replace_query: Option<String> = None;
+            if let Some(p) = args.iter().position(|a| a == "--replace") {
+                if p + 1 >= args.len() {
+                    usage();
+                }
+                replace_query = Some(args[p + 1].clone());
             }
 
             let text = read_source(&input_path);
@@ -355,7 +390,20 @@ fn main() {
                         println!("  {}", line);
                     }
                     println!("------------------------------------------------------------");
-                    if let Some(n) = save_name {
+                    if let Some(q) = replace_query {
+                        let locks = parse_history(&read_source(&file));
+                        let idx = resolve_index(&locks, &q).unwrap_or_else(|e| {
+                            eprintln!("{}", e);
+                            exit(1);
+                        });
+                        match replace_lock_in_file(&file, idx, &name, &rules, &start, &sol) {
+                            Ok(()) => println!("Updated \"{}\" (#{}) in {}", name, idx + 1, file),
+                            Err(e) => {
+                                eprintln!("{}", e);
+                                exit(1);
+                            }
+                        }
+                    } else if let Some(n) = save_name {
                         let nm = if n.is_empty() { name } else { n };
                         match append_lock(&file, &nm, &rules, &start, &sol) {
                             Ok(()) => println!("Saved \"{}\" to {}", nm, file),
@@ -365,7 +413,7 @@ fn main() {
                             }
                         }
                     } else {
-                        println!("(tip: add  --save \"<name>\"  to record this lock in {})", file);
+                        println!("(tip: add  --save \"<name>\"  to record this lock, or  --replace <id>  to update one)");
                     }
                 }
             }

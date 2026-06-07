@@ -20,18 +20,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---------- state ----------
 
-const SAVE_KEY = "nl_saved_locks";
-const loadSaved = () => {
-  try {
-    return JSON.parse(localStorage.getItem(SAVE_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
+// The web app is read-only over the built-in history — it has no persistent
+// store to save user locks into (use the CLI/TUI to capture and edit locks).
 const state = {
   lang: localStorage.getItem("nl_lang"),
   screen: "lang",
-  saved: loadSaved(),
   browse: { filter: "", sel: 0 },
   solve: { n: 6, name: "", rules: ["", "", "", "", "", ""], start: "", result: null },
   step: null,
@@ -39,9 +32,7 @@ const state = {
 if (state.lang && I18N[state.lang]) state.screen = "browse";
 
 const tr = (key) => I18N[state.lang]?.[key] ?? I18N.en[key] ?? key;
-const allLocks = () => [...HISTORY, ...state.saved];
-const isSaved = (i) => i >= HISTORY.length;
-const persist = () => localStorage.setItem(SAVE_KEY, JSON.stringify(state.saved));
+const allLocks = () => HISTORY;
 
 // ---------- SVG lock visualization ----------
 
@@ -260,18 +251,6 @@ function renderBrowse() {
         el("span", { textContent: l.name }),
       ]);
       if (idx === state.browse.sel) li.classList.add("sel");
-      if (isSaved(i)) {
-        const del = el("button", { className: "del", title: tr("browse.delete"), textContent: "🗑" });
-        del.onclick = (e) => {
-          e.stopPropagation();
-          if (confirm(`${tr("browse.delete")} "${l.name}"?`)) {
-            state.saved.splice(i - HISTORY.length, 1);
-            persist();
-            renderBrowse();
-          }
-        };
-        li.append(del);
-      }
       li.onclick = () => {
         state.browse.sel = idx;
         drawDetail();
@@ -510,16 +489,7 @@ function showSolveResult({ sol, mat, start, name, n }) {
     el("div", { className: "ok", textContent: `✓ ${sol.total} ${tr("result.solved_suffix").replace(/ ·.*/, "")}` })
   );
   const walk = el("button", { className: "btn", textContent: `▶ ${tr("tab.step")}`, onclick: () => startStep(name, mat, start.slice(), sol.steps) });
-  const save = el("button", {
-    className: "btn ghost",
-    textContent: `💾 ${tr("msg.saved")}`,
-    onclick: () => {
-      state.saved.push({ name, rules: state.solve.rules.slice(0, n), start: start.slice(), solution: sol.steps.map(stepLine) });
-      persist();
-      setStatus(`${tr("msg.saved")} "${name}"`);
-    },
-  });
-  body.append(el("div", { className: "btn-row", style: "margin:8px 0" }, [walk, save]));
+  body.append(el("div", { className: "btn-row", style: "margin:8px 0" }, [walk]));
   const list = el("div", { className: "mono" });
   for (const st of sol.steps) list.append(el("div", { textContent: `  ${stepLine(st)}` }));
   body.append(list);

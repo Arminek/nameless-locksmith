@@ -45,6 +45,14 @@ solve.example       = Cargar ejemplo
 solve.format        = Formato y ejemplos
 solve.err_complex   = Cerradura demasiado compleja para el navegador — usa menos tambores
 solve.err_count     = Introduce una posición inicial (1–7) por cada tambor
+help.intro        = Cada cerradura tiene <b>2–8 tambores</b> (placas) en una pista <b>1–7</b>. El objetivo es centrar cada placa en <b>4</b>.
+help.rule        = Una <b>regla</b> describe qué les pasa a las <i>otras</i> placas cuando pulsas <b>[D]</b> en ese tambor:
+help.dirs        = <code>r</code> = esa placa se desliza a la <b>derecha</b> · <code>l</code> = a la <b>izquierda</b> · <code>-</code> = nada se mueve
+help.start        = <b>Inicio</b> = la posición actual (1–7) de cada placa, de izquierda a derecha.
+help.example        = Ejemplo (6 tambores):
+help.solves        = se resuelve en 52 clics
+help.output        = <b>Salida:</b> <code>4: 2x D</code> significa pulsar <b>[D]</b> dos veces en el tambor 4. [A] es lo opuesto de [D].
+help.tip        = <i>Consejo:</i> si una placa está atascada en una pared (1 o 7), una pulsación [D] puede bloquearse y ocultar una dependencia — mueve las placas hacia el centro primero.
 
 step.lock    = Cerradura
 step.steps   = Pasos

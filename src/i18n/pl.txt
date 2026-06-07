@@ -45,6 +45,14 @@ solve.example       = Wczytaj przykład
 solve.format        = Format i przykłady
 solve.err_complex   = Zamek zbyt złożony dla przeglądarki — spróbuj mniej bębenków
 solve.err_count     = Podaj jedną pozycję startową (1–7) dla każdego bębenka
+help.intro        = Każdy zamek ma <b>2–8 bębenków</b> (płytek) na torze <b>1–7</b>. Celem jest wyśrodkowanie każdej płytki na <b>4</b>.
+help.rule        = <b>Reguła</b> opisuje, co dzieje się z <i>pozostałymi</i> płytkami, gdy naciśniesz <b>[D]</b> na danym bębenku:
+help.dirs        = <code>r</code> = ta płytka przesuwa się w <b>prawo</b> · <code>l</code> = w <b>lewo</b> · <code>-</code> = nic się nie rusza
+help.start        = <b>Start</b> = aktualna pozycja (1–7) każdej płytki, od lewej do prawej.
+help.example        = Przykład (6 bębenków):
+help.solves        = rozwiązuje w 52 kliknięciach
+help.output        = <b>Wynik:</b> <code>4: 2x D</code> oznacza dwukrotne naciśnięcie <b>[D]</b> na bębenku 4. [A] jest przeciwieństwem [D].
+help.tip        = <i>Wskazówka:</i> jeśli płytka jest zablokowana o ścianę (1 lub 7), naciśnięcie [D] może zostać zablokowane i ukryć zależność — najpierw przesuń płytki ku środkowi.
 
 step.lock    = Zamek
 step.steps   = Kroki

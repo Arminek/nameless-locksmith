@@ -413,7 +413,7 @@ function renderSolve() {
   if (s.result) showSolveResult(s.result);
 }
 
-// Collapsible format reference with a worked example.
+// Collapsible format reference with a worked example (fully localized).
 function formatHelp() {
   const d = el("details", { className: "help" });
   d.append(el("summary", { textContent: tr("solve.format") }));
@@ -424,27 +424,22 @@ function formatHelp() {
     return e;
   };
   body.append(
-    p(
-      "Each lock has <b>2–8 tumblers</b> (plates) on a <b>1–7</b> track. The goal is every plate centred on <b>4</b>."
-    ),
-    p(
-      "A <b>rule</b> describes what happens to the <i>other</i> plates when you press <b>[D]</b> on that tumbler:"
-    ),
-    p(
-      "&nbsp;&nbsp;<code>r</code> = that plate slides <b>right</b> &nbsp; <code>l</code> = slides <b>left</b> &nbsp; <code>-</code> = nothing moves"
-    ),
-    p("<b>Start</b> = the current position (1–7) of each plate, left to right."),
-    p("<b>Example</b> (6 tumblers):"),
+    p(tr("help.intro")),
+    p(tr("help.rule")),
+    p(tr("help.dirs")),
+    p(tr("help.start")),
+    p(`<b>${tr("help.example")}</b>`),
     el("pre", { className: "mono", textContent:
-      "Rule 1: 3r, 6l    → [D] on 1 slides plate 3 right, plate 6 left\n" +
+      "Rule 1: 3r, 6l\n" +
       "Rule 2: -\n" +
       "Rule 3: 1r, 4l, 6r\n" +
       "Rule 4: 2r, 5r, 6l\n" +
       "Rule 5: -\n" +
       "Rule 6: 3l\n" +
-      "Start:  5, 3, 6, 7, 2, 7      → solves in 52 clicks" }),
-    p("<b>Output:</b> <code>4: 2x D</code> means press <b>[D]</b> twice on tumbler 4. [A] is the opposite of [D]."),
-    p("<i>Tip:</i> if a plate is jammed at a wall (1 or 7), a [D] press can be blocked and hide a dependency — nudge plates toward the middle before reading the rules.")
+      "Start:  5, 3, 6, 7, 2, 7" }),
+    p(`→ <b>${tr("help.solves")}</b>`),
+    p(tr("help.output")),
+    p(tr("help.tip"))
   );
   d.append(body);
   return d;

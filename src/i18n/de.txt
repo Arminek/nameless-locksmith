@@ -45,6 +45,14 @@ solve.example       = Beispiel laden
 solve.format        = Format & Beispiele
 solve.err_complex   = Schloss zu komplex für den Browser — weniger Zuhaltungen versuchen
 solve.err_count     = Gib eine Startposition (1–7) pro Zuhaltung an
+help.intro        = Jedes Schloss hat <b>2–8 Zuhaltungen</b> (Platten) auf einer <b>1–7</b>-Bahn. Ziel ist, jede Platte auf <b>4</b> zu zentrieren.
+help.rule        = Eine <b>Regel</b> beschreibt, was mit den <i>anderen</i> Platten passiert, wenn du <b>[D]</b> auf dieser Zuhaltung drückst:
+help.dirs        = <code>r</code> = diese Platte gleitet nach <b>rechts</b> · <code>l</code> = nach <b>links</b> · <code>-</code> = nichts bewegt sich
+help.start        = <b>Start</b> = die aktuelle Position (1–7) jeder Platte, von links nach rechts.
+help.example        = Beispiel (6 Zuhaltungen):
+help.solves        = löst in 52 Klicks
+help.output        = <b>Ausgabe:</b> <code>4: 2x D</code> bedeutet zweimal <b>[D]</b> auf Zuhaltung 4 drücken. [A] ist das Gegenteil von [D].
+help.tip        = <i>Tipp:</i> klemmt eine Platte an einer Wand (1 oder 7), kann ein [D]-Druck blockiert werden und eine Abhängigkeit verbergen — schiebe die Platten zuerst zur Mitte.
 
 step.lock    = Schloss
 step.steps   = Schritte

@@ -45,6 +45,14 @@ solve.example       = Charger un exemple
 solve.format        = Format et exemples
 solve.err_complex   = Serrure trop complexe pour le navigateur — essayez moins de disques
 solve.err_count     = Indiquez une position de départ (1–7) par disque
+help.intro        = Chaque serrure a <b>2–8 disques</b> (plaques) sur une piste <b>1–7</b>. Le but est de centrer chaque plaque sur <b>4</b>.
+help.rule        = Une <b>règle</b> décrit ce qui arrive aux <i>autres</i> plaques quand on appuie sur <b>[D]</b> sur ce disque :
+help.dirs        = <code>r</code> = cette plaque glisse à <b>droite</b> · <code>l</code> = à <b>gauche</b> · <code>-</code> = rien ne bouge
+help.start        = <b>Départ</b> = la position actuelle (1–7) de chaque plaque, de gauche à droite.
+help.example        = Exemple (6 disques) :
+help.solves        = se résout en 52 clics
+help.output        = <b>Sortie :</b> <code>4: 2x D</code> signifie appuyer deux fois sur <b>[D]</b> sur le disque 4. [A] est l'opposé de [D].
+help.tip        = <i>Astuce :</i> si une plaque est coincée contre un mur (1 ou 7), une pression [D] peut être bloquée et masquer une dépendance — ramène d'abord les plaques vers le centre.
 
 step.lock    = Serrure
 step.steps   = Étapes

@@ -52,6 +52,14 @@ solve.example       = Load example
 solve.format        = Format & examples
 solve.err_complex   = Lock too complex to solve in the browser — try fewer tumblers
 solve.err_count     = Enter one starting position (1–7) for each tumbler
+help.intro        = Each lock has <b>2–8 tumblers</b> (plates) on a <b>1–7</b> track. The goal is every plate centred on <b>4</b>.
+help.rule        = A <b>rule</b> describes what happens to the <i>other</i> plates when you press <b>[D]</b> on that tumbler:
+help.dirs        = <code>r</code> = that plate slides <b>right</b> · <code>l</code> = slides <b>left</b> · <code>-</code> = nothing moves
+help.start        = <b>Start</b> = the current position (1–7) of each plate, left to right.
+help.example        = Example (6 tumblers):
+help.solves        = solves in 52 clicks
+help.output        = <b>Output:</b> <code>4: 2x D</code> means press <b>[D]</b> twice on tumbler 4. [A] is the opposite of [D].
+help.tip        = <i>Tip:</i> if a plate is jammed at a wall (1 or 7), a [D] press can be blocked and hide a dependency — nudge plates toward the middle first.
 
 step.lock    = Lock
 step.steps   = Steps

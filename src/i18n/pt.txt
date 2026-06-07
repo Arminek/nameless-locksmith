@@ -45,6 +45,14 @@ solve.example       = Carregar exemplo
 solve.format        = Formato e exemplos
 solve.err_complex   = Fechadura demasiado complexa para o navegador — use menos tambores
 solve.err_count     = Indique uma posição inicial (1–7) para cada tambor
+help.intro        = Cada fechadura tem <b>2–8 tambores</b> (placas) numa pista <b>1–7</b>. O objetivo é centrar cada placa em <b>4</b>.
+help.rule        = Uma <b>regra</b> descreve o que acontece às <i>outras</i> placas quando pressionas <b>[D]</b> nesse tambor:
+help.dirs        = <code>r</code> = essa placa desliza para a <b>direita</b> · <code>l</code> = para a <b>esquerda</b> · <code>-</code> = nada se move
+help.start        = <b>Início</b> = a posição atual (1–7) de cada placa, da esquerda para a direita.
+help.example        = Exemplo (6 tambores):
+help.solves        = resolve-se em 52 cliques
+help.output        = <b>Saída:</b> <code>4: 2x D</code> significa pressionar <b>[D]</b> duas vezes no tambor 4. [A] é o oposto de [D].
+help.tip        = <i>Dica:</i> se uma placa estiver presa numa parede (1 ou 7), uma pressão [D] pode ser bloqueada e ocultar uma dependência — empurra as placas para o meio primeiro.
 
 step.lock    = Fechadura
 step.steps   = Passos
